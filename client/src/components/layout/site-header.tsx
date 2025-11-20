@@ -1,4 +1,4 @@
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/lib/auth";
 import { Bell, Menu, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

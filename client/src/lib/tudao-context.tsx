@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy } from '@/lib/auth';
 
 // Roles defined in requirements
 export type UserRole = 'provider' | 'consumer' | 'nodeholder' | 'architect';

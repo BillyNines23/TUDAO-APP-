@@ -23,7 +23,7 @@ import {
   Server,
   RefreshCw
 } from "lucide-react";
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy } from "@/lib/auth";
 
 // Mock Data Types
 type TransactionType = 'Transfer' | 'Contract Interaction' | 'Reward Claim' | 'Node Mint' | 'Escrow Payment';

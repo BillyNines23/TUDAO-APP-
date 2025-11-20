@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import { PrivyProvider } from "@privy-io/react-auth";
+import { PrivyProvider } from "@/lib/auth";
 import { TudaoProvider } from "@/lib/tudao-context";
 
 // Pages
