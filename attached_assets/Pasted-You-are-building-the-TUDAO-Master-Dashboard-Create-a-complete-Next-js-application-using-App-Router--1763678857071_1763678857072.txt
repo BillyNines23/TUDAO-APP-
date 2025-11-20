@@ -1,0 +1,194 @@
+You are building the TUDAO Master Dashboard.
+Create a complete Next.js application using App Router with the following structure:
+
+1. GLOBAL REQUIREMENTS
+Branding
+
+Use TUDAO blue/steel color scheme.
+
+Include TU logo placeholder in the top-left sidebar header.
+
+Global tagline: “For Those Who Do the Work.”
+
+Layout
+
+Create a global app shell with:
+
+Left sidebar (role-based navigation)
+
+Top header (wallet connect button, notifications)
+
+Main content area
+
+Responsive + clean professional styling (shadcn/ui + Tailwind)
+
+2. WALLET INTEGRATION (Required Immediately)
+
+Install and configure Privy authentication + embedded wallet:
+
+@privy-io/react-auth
+@privy-io/server-auth
+
+
+Add:
+
+“Connect Wallet” button in top-right
+
+Automatically create embedded Base wallet on login
+
+After login → redirect user to /dashboard
+
+Store user roles in local state for now:
+
+provider
+
+consumer
+
+nodeholder
+
+architect
+
+3. ROUTING STRUCTURE
+
+Create the following folder/pages:
+
+/app
+  /home
+  /dashboard
+      /provider
+      /consumer
+      /nodeholder
+      /architect
+  /wallet
+  /onboarding
+      /provider
+  /scope
+  /nodes
+      /buy
+
+
+Add placeholder content in each page:
+
+Title
+
+Description
+
+Breadcrumb
+
+Sample UI box
+
+4. GLOBAL SIDEBAR (ROLE-BASED)
+
+Sidebar should show:
+
+For ALL users
+
+Home
+
+Wallet
+
+Scope Agent
+
+Buy Nodes
+
+Settings
+
+Provider
+
+My Jobs
+
+Earnings
+
+Escrow
+
+Ratings
+
+Consumer
+
+Request Service
+
+My Projects
+
+Payments
+
+Nodeholder
+
+My Nodes
+
+Rewards Vault
+
+Governance
+
+Architect (Admin)
+
+Emissions Dashboard
+
+Node Analytics
+
+Verification Queue
+
+Whale Oversight
+
+System Settings
+
+Use conditional rendering based on local role.
+
+5. PAGES TO POPULATE LATER
+
+Add empty stub components:
+
+/dashboard/provider
+
+/dashboard/consumer
+
+/dashboard/nodeholder
+
+/dashboard/architect
+
+/scope (AI scope wizard will be plugged here)
+
+/onboarding/provider
+
+/nodes/buy
+
+For now, they should say:
+
+“This module will integrate an existing TUDAO component.”
+
+6. USE SHADCN/UI FOR COMPONENTS
+
+Install:
+
+shadcn-ui
+tailwindcss
+lucide-react
+clsx
+
+
+Use shadcn for:
+
+Sidebar
+
+Cards
+
+Buttons
+
+Inputs
+
+Page headers
+
+Navigation menu
+
+7. FINAL DELIVERABLES
+
+Generate:
+
+✔ Full Next.js project
+✔ Global layout shell (sidebar + header)
+✔ Privy wallet integration
+✔ Role-based navigation
+✔ Clean placeholder dashboard for each role
+✔ Modular pages ready for silo integration
+✔ /home landing page with TUDAO branding
+
+This project will serve as the unified TUDAO platform where all existing silos (Provider Onboarding, Scope Agent, Node Sales, Emissions Dashboard) will be plugged in."
