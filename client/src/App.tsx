@@ -23,6 +23,7 @@ import WalletPage from "@/pages/wallet";
 import TransactionVerification from "@/pages/wallet/transactions";
 import ScopePage from "@/pages/scope";
 import BuyNodesPage from "@/pages/nodes/buy";
+import OnboardingPath from "@/pages/onboarding/path";
 
 function Router() {
   const [location] = useLocation();
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/home" component={Home} />
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/onboarding/path" component={OnboardingPath} />
       
       {/* Role Routes */}
       <Route path="/dashboard/provider" component={ProviderDashboard} />

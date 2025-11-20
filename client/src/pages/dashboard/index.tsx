@@ -13,6 +13,16 @@ export default function Dashboard() {
   useEffect(() => {
     if (role === 'consumer') {
         setLocation('/dashboard/consumer');
+    } else if (role === 'provider') {
+        setLocation('/dashboard/provider');
+    } else if (role === 'nodeholder') {
+        setLocation('/dashboard/nodeholder');
+    } else if (role === 'architect') {
+        setLocation('/dashboard/architect');
+    } else {
+        // If no role is set (shouldn't happen with current context default, but for safety)
+        // In a real app, we would redirect to onboarding if role is null
+        // setLocation('/onboarding/path');
     }
   }, [role, setLocation]);
 
