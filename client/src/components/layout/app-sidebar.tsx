@@ -1,4 +1,4 @@
-import { Home, Wallet, Monitor, ShoppingCart, Settings, Briefcase, DollarSign, Shield, Star, Search, FolderOpen, CreditCard, Server, Vault, Vote, Activity, BarChart, FileCheck, Eye, Cpu, ScrollText } from "lucide-react";
+import { Home, Wallet, Monitor, ShoppingCart, Settings, Briefcase, DollarSign, Shield, Star, Search, FolderOpen, CreditCard, Server, Vault, Vote, Activity, BarChart, FileCheck, Eye, Cpu, ScrollText, MessageSquare, Clock, History } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,8 @@ const roleNav = {
     { title: "Request Service", url: "/dashboard/consumer/request", icon: Search },
     { title: "My Projects", url: "/dashboard/consumer/projects", icon: FolderOpen },
     { title: "Payments", url: "/dashboard/consumer/payments", icon: CreditCard },
+    { title: "Messages", url: "/dashboard/consumer/messages", icon: MessageSquare },
+    { title: "History", url: "/dashboard/consumer/history", icon: History },
   ],
   nodeholder: [
     { title: "My Nodes", url: "/dashboard/nodeholder/nodes", icon: Server },

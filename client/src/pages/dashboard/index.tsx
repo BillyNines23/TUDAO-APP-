@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 import AppShell from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTudao } from "@/lib/tudao-context";
@@ -6,6 +8,13 @@ import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { role } = useTudao();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (role === 'consumer') {
+        setLocation('/dashboard/consumer');
+    }
+  }, [role, setLocation]);
 
   return (
     <AppShell>

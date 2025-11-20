@@ -12,6 +12,11 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard/index";
 import ProviderDashboard from "@/pages/dashboard/provider";
 import ConsumerDashboard from "@/pages/dashboard/consumer";
+import ConsumerRequest from "@/pages/dashboard/consumer/request";
+import ConsumerProjects from "@/pages/dashboard/consumer/projects";
+import ConsumerPayments from "@/pages/dashboard/consumer/payments";
+import ConsumerMessages from "@/pages/dashboard/consumer/messages";
+import ConsumerHistory from "@/pages/dashboard/consumer/history";
 import NodeholderDashboard from "@/pages/dashboard/nodeholder";
 import ArchitectDashboard from "@/pages/dashboard/architect";
 import WalletPage from "@/pages/wallet";
@@ -36,7 +41,11 @@ function Router() {
       <Route path="/dashboard/provider/*" component={ProviderDashboard} />
       
       <Route path="/dashboard/consumer" component={ConsumerDashboard} />
-      <Route path="/dashboard/consumer/*" component={ConsumerDashboard} />
+      <Route path="/dashboard/consumer/request" component={ConsumerRequest} />
+      <Route path="/dashboard/consumer/projects" component={ConsumerProjects} />
+      <Route path="/dashboard/consumer/payments" component={ConsumerPayments} />
+      <Route path="/dashboard/consumer/messages" component={ConsumerMessages} />
+      <Route path="/dashboard/consumer/history" component={ConsumerHistory} />
       
       <Route path="/dashboard/nodeholder" component={NodeholderDashboard} />
       <Route path="/dashboard/nodeholder/*" component={NodeholderDashboard} />
