@@ -46,3 +46,8 @@ waitForPort = 5000
 [agent]
 mockupState = "FULLSTACK"
 integrations = ["javascript_database:1.0.0"]
+
+[userenv]
+
+[userenv.shared]
+ARCHITECT_WHITELIST = "0x91ab951ab5c31a0d475d3539099c09d7fc307a75"
