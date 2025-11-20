@@ -92,11 +92,7 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
     }
   };
 
-  // Auto-login on mount for demo
-  useEffect(() => {
-    login();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Removed auto-login - users must click "Log In" button
 
   const logout = () => {
     setAuthenticated(false);

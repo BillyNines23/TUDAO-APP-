@@ -13,10 +13,10 @@ export default function Home() {
   const { setRole } = useTudao();
   const { user, authenticated, login, logout } = usePrivy();
 
-  // Auto-redirect existing users to their dashboard
+  // Auto-redirect existing users to their dashboard after login
   useEffect(() => {
-    if (authenticated && user?.role && user.isExistingUser) {
-      // Existing user with a role - auto-redirect
+    if (authenticated && user?.role) {
+      // User has a role - redirect to their dashboard
       setRole(user.role as any);
       switch (user.role) {
         case "consumer":
@@ -85,28 +85,13 @@ export default function Home() {
            <span className="font-display font-bold text-2xl tracking-tighter">TUDAO</span>
         </div>
         <div className="flex items-center gap-4">
-          {authenticated && user ? (
-            <div className="flex items-center gap-3">
-              <div className="text-sm text-muted-foreground">
-                <span className="font-mono">{user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}</span>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={logout}
-                data-testid="button-logout"
-              >
-                Disconnect
-              </Button>
-            </div>
-          ) : (
+          {!authenticated && (
             <Button 
               onClick={login}
               className="bg-primary hover:bg-primary/90"
-              data-testid="button-connect-wallet"
+              data-testid="button-login"
             >
-              <Wallet className="mr-2 h-4 w-4" />
-              Connect Wallet
+              Log In
             </Button>
           )}
         </div>
@@ -129,33 +114,50 @@ export default function Home() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Do The Work.</span>
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12">
-                    Decentralized task orchestration, node governance, and autonomous scope agents. Choose your path to get started.
+                    Decentralized task orchestration, node governance, and autonomous scope agents.
                 </p>
                 
-                {/* Connect Wallet CTA - Show if not authenticated */}
+                {/* CTA for not authenticated users */}
                 {!authenticated && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="mb-12"
+                    className="mb-12 flex gap-4 justify-center"
                   >
                     <Button 
                       onClick={login}
                       size="lg"
                       className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 h-auto"
-                      data-testid="button-connect-wallet-hero"
+                      data-testid="button-login-hero"
                     >
-                      <Wallet className="mr-2 h-5 w-5" />
-                      Connect Wallet to Get Started
+                      Log In
+                    </Button>
+                    <Button 
+                      onClick={login}
+                      size="lg"
+                      variant="outline"
+                      className="text-lg px-8 py-6 h-auto"
+                      data-testid="button-signup-hero"
+                    >
+                      Create Account
                     </Button>
                   </motion.div>
                 )}
             </motion.div>
 
-            {/* Role Selection Cards - Only show for new users without a role */}
+            {/* Role Selection - Only show for authenticated users without a role */}
             {authenticated && user && !user.role && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+              <>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center mb-8"
+                >
+                  <h2 className="text-3xl font-bold mb-2">Choose Your Role</h2>
+                  <p className="text-muted-foreground">Select how you want to participate in the TUDAO ecosystem</p>
+                </motion.div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
                 <motion.div 
                   whileHover={{ scale: 1.03 }} 
                   whileTap={{ scale: 0.98 }}
@@ -230,11 +232,12 @@ export default function Home() {
                     </CardHeader>
                   </Card>
                 </motion.div>
-              </div>
+                </div>
+              </>
             )}
 
-            {/* Loading message for existing users being redirected */}
-            {authenticated && user && user.role && user.isExistingUser && (
+            {/* Loading message for users with role being redirected */}
+            {authenticated && user && user.role && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
