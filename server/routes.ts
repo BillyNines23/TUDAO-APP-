@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertProjectSchema, insertMessageSchema } from "@shared/schema";
+import { isAuthorizedArchitect } from "./config";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -30,7 +31,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      res.json(user);
+      // Add architect authorization flag
+      const isArchitect = isAuthorizedArchitect(user.walletAddress);
+      res.json({ ...user, isAuthorizedArchitect: isArchitect });
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  app.get("/api/auth/check-architect/:address", async (req, res) => {
+    try {
+      const isAuthorized = isAuthorizedArchitect(req.params.address);
+      res.json({ isAuthorized });
     } catch (error) {
       res.status(500).json({ error: "Server error" });
     }
@@ -39,11 +51,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/users/:id/role", async (req, res) => {
     try {
       const { role } = req.body;
-      const user = await storage.updateUserRole(req.params.id, role);
-      if (!user) {
+      
+      // Check authorization for architect role
+      if (role === 'architect') {
+        const user = await storage.getUser(req.params.id);
+        if (!user || !isAuthorizedArchitect(user.walletAddress)) {
+          return res.status(403).json({ error: "Unauthorized: Architect role requires authorization" });
+        }
+      }
+      
+      const updatedUser = await storage.updateUserRole(req.params.id, role);
+      if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
-      res.json(user);
+      res.json(updatedUser);
     } catch (error) {
       res.status(500).json({ error: "Server error" });
     }
