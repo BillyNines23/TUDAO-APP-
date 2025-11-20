@@ -9,6 +9,7 @@ import { TudaoProvider } from "@/lib/tudao-context";
 
 // Pages
 import Home from "@/pages/home";
+import ArchitectLogin from "@/pages/architect-login";
 import Dashboard from "@/pages/dashboard/index";
 import ProviderDashboard from "@/pages/dashboard/provider";
 import ConsumerDashboard from "@/pages/dashboard/consumer";
@@ -35,6 +36,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/home" component={Home} />
+      <Route path="/architect" component={ArchitectLogin} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/onboarding/path" component={OnboardingPath} />
       
