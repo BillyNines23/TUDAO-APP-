@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
@@ -11,6 +12,24 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { setRole } = useTudao();
   const { user, authenticated, login, logout } = usePrivy();
+  const [isArchitectAuthorized, setIsArchitectAuthorized] = useState(false);
+
+  useEffect(() => {
+    const checkArchitectAuth = async () => {
+      if (authenticated && user?.walletAddress) {
+        try {
+          const response = await fetch(`/api/auth/check-architect/${user.walletAddress}`);
+          const data = await response.json();
+          setIsArchitectAuthorized(data.isAuthorized);
+        } catch (error) {
+          console.error("Failed to check architect authorization:", error);
+        }
+      } else {
+        setIsArchitectAuthorized(false);
+      }
+    };
+    checkArchitectAuth();
+  }, [authenticated, user]);
 
   const handleRoleSelect = (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
     setRole(role);
@@ -118,7 +137,7 @@ export default function Home() {
 
             {/* Role Selection Cards - Only show when authenticated */}
             {authenticated && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+              <div className={`grid grid-cols-1 ${isArchitectAuthorized ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 ${isArchitectAuthorized ? 'max-w-6xl' : 'max-w-5xl'} mx-auto mb-20`}>
                 <motion.div 
                   whileHover={{ scale: 1.03 }} 
                   whileTap={{ scale: 0.98 }}
@@ -193,6 +212,35 @@ export default function Home() {
                     </CardHeader>
                   </Card>
                 </motion.div>
+
+                {/* Architect Card - Only for authorized wallets */}
+                {isArchitectAuthorized && (
+                  <motion.div 
+                    whileHover={{ scale: 1.03 }} 
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <Card 
+                      className="h-full cursor-pointer hover:border-orange-500 transition-all hover:shadow-xl hover:shadow-orange-500/10 group bg-card/50 backdrop-blur-sm border-orange-500/20"
+                      onClick={() => handleRoleSelect("architect")}
+                      data-testid="card-role-architect"
+                    >
+                      <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                        <div className="mx-auto h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                           <Shield className="h-8 w-8 text-orange-500 group-hover:text-white transition-colors" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-xl mb-2">System Architect</CardTitle>
+                            <CardDescription className="text-base">
+                              Admin dashboard & oversight
+                            </CardDescription>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </motion.div>
+                )}
               </div>
             )}
         </div>
