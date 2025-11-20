@@ -36,7 +36,7 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async () => {
-    const mockWallet = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+    const mockWallet = "0x91ab951ab5c31a0d475d3539099c09d7fc307a75";
     
     try {
       // Check if user exists in DB

@@ -1,7 +1,6 @@
 // Authorized architect wallet addresses
 export const ARCHITECT_WHITELIST = [
-  // Add your wallet address here
-  "YOUR_WALLET_ADDRESS_HERE"
+  "0x91ab951ab5c31a0d475d3539099c09d7fc307a75"
 ];
 
 export function isAuthorizedArchitect(walletAddress: string): boolean {
