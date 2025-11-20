@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
-import { Users, Zap, Database, Briefcase, ShieldCheck, Shield } from "lucide-react";
+import { Users, Zap, Database, Briefcase, ShieldCheck, Shield, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
 import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
 import { useTudao } from "@/lib/tudao-context";
+import { usePrivy } from "@/lib/auth";
 
 export default function Home() {
   const [, setLocation] = useLocation();
   const { setRole } = useTudao();
+  const { user, authenticated, login, logout } = usePrivy();
 
   const handleRoleSelect = (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
     setRole(role);
@@ -45,6 +47,32 @@ export default function Home() {
            </div>
            <span className="font-display font-bold text-2xl tracking-tighter">TUDAO</span>
         </div>
+        <div className="flex items-center gap-4">
+          {authenticated && user ? (
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-muted-foreground">
+                <span className="font-mono">{user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={logout}
+                data-testid="button-logout"
+              >
+                Disconnect
+              </Button>
+            </div>
+          ) : (
+            <Button 
+              onClick={login}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-connect-wallet"
+            >
+              <Wallet className="mr-2 h-4 w-4" />
+              Connect Wallet
+            </Button>
+          )}
+        </div>
       </nav>
 
       {/* Hero */}
@@ -66,10 +94,31 @@ export default function Home() {
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12">
                     Decentralized task orchestration, node governance, and autonomous scope agents. Choose your path to get started.
                 </p>
+                
+                {/* Connect Wallet CTA - Show if not authenticated */}
+                {!authenticated && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="mb-12"
+                  >
+                    <Button 
+                      onClick={login}
+                      size="lg"
+                      className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 h-auto"
+                      data-testid="button-connect-wallet-hero"
+                    >
+                      <Wallet className="mr-2 h-5 w-5" />
+                      Connect Wallet to Get Started
+                    </Button>
+                  </motion.div>
+                )}
             </motion.div>
 
-            {/* Role Selection Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+            {/* Role Selection Cards - Only show when authenticated */}
+            {authenticated && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
                 <motion.div 
                   whileHover={{ scale: 1.03 }} 
                   whileTap={{ scale: 0.98 }}
@@ -144,7 +193,8 @@ export default function Home() {
                     </CardHeader>
                   </Card>
                 </motion.div>
-            </div>
+              </div>
+            )}
         </div>
 
         {/* Features Grid */}
