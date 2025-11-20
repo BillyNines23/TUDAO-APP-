@@ -1,11 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
-import { ArrowRight, Shield, Users, Zap, Database } from "lucide-react";
+import { Shield, Users, Zap, Database, Briefcase, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
 import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
+import { useTudao } from "@/lib/tudao-context";
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const { setRole } = useTudao();
+
+  const handleRoleSelect = (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
+    setRole(role);
+    
+    switch (role) {
+      case "consumer":
+        setLocation("/dashboard/consumer");
+        break;
+      case "provider":
+        setLocation("/dashboard/provider");
+        break;
+      case "nodeholder":
+        setLocation("/dashboard/nodeholder");
+        break;
+      case "architect":
+        setLocation("/dashboard/architect");
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden relative selection:bg-primary/20">
@@ -23,84 +45,110 @@ export default function Home() {
            </div>
            <span className="font-display font-bold text-2xl tracking-tighter">TUDAO</span>
         </div>
-        <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => setLocation('/dashboard')}>Dashboard</Button>
-            <Button onClick={() => setLocation('/dashboard')}>Launch App</Button>
-        </div>
       </nav>
 
       {/* Hero */}
-      <main className="max-w-7xl mx-auto px-6 pt-20 pb-32">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="space-y-8">
-                <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-md">
+      <main className="max-w-7xl mx-auto px-6 pt-12 pb-20">
+        <div className="text-center mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+                <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-sm font-medium text-primary backdrop-blur-md mb-6">
                     <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
                     The Future of Work is Here
                 </div>
-                <h1 className="text-6xl md:text-7xl font-display font-bold tracking-tight leading-[1.1]">
+                <h1 className="text-6xl md:text-7xl font-display font-bold tracking-tight leading-[1.1] mb-8">
                     For Those Who <br/>
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Do The Work.</span>
                 </h1>
-                <p className="text-xl text-muted-foreground max-w-lg leading-relaxed">
-                    Decentralized task orchestration, node governance, and autonomous scope agents. The master dashboard for the TUDAO ecosystem.
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12">
+                    Decentralized task orchestration, node governance, and autonomous scope agents. Choose your path to get started.
                 </p>
-                
-                <div className="flex flex-wrap gap-4 pt-4">
-                    <Button size="lg" className="h-12 px-8 text-base shadow-xl shadow-primary/20" onClick={() => setLocation('/dashboard')}>
-                        Enter Dashboard <ArrowRight className="ml-2 w-4 h-4" />
-                    </Button>
-                    <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/5">
-                        Read Documentation
-                    </Button>
-                </div>
-            </div>
+            </motion.div>
 
-            <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-2xl blur-2xl -z-10 transform rotate-3"></div>
-                <Card className="border-primary/10 bg-background/40 backdrop-blur-md shadow-2xl">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <ActivityIndicator />
-                            System Status
-                        </CardTitle>
-                        <CardDescription>Real-time ecosystem metrics</CardDescription>
+            {/* Role Selection Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+                <motion.div 
+                  whileHover={{ scale: 1.03 }} 
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <Card 
+                    className="h-full cursor-pointer hover:border-blue-500 transition-all hover:shadow-xl hover:shadow-blue-500/10 group bg-card/50 backdrop-blur-sm"
+                    onClick={() => handleRoleSelect("consumer")}
+                  >
+                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                      <div className="mx-auto h-16 w-16 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                         <Users className="h-8 w-8 text-blue-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <div>
+                          <CardTitle className="text-xl mb-2">Hire a Provider</CardTitle>
+                          <CardDescription className="text-base">
+                            I need help with a service
+                          </CardDescription>
+                      </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Active Nodes</span>
-                                <span className="font-mono font-bold">1,248</span>
-                            </div>
-                            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                                <div className="h-full bg-primary w-[75%] rounded-full" />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Treasury Volume</span>
-                                <span className="font-mono font-bold">$4.2M</span>
-                            </div>
-                            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                                <div className="h-full bg-blue-500 w-[45%] rounded-full" />
-                            </div>
-                        </div>
-                         <div className="grid grid-cols-2 gap-4 pt-4">
-                            <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
-                                <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Tasks</div>
-                                <div className="text-2xl font-mono font-bold">842</div>
-                            </div>
-                            <div className="p-4 rounded-lg bg-secondary/50 border border-border/50">
-                                <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Agents</div>
-                                <div className="text-2xl font-mono font-bold">12</div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                  </Card>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ scale: 1.03 }} 
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Card 
+                    className="h-full cursor-pointer hover:border-green-500 transition-all hover:shadow-xl hover:shadow-green-500/10 group bg-card/50 backdrop-blur-sm"
+                    onClick={() => handleRoleSelect("provider")}
+                  >
+                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                      <div className="mx-auto h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
+                         <Briefcase className="h-8 w-8 text-green-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <div>
+                          <CardTitle className="text-xl mb-2">Become a Provider</CardTitle>
+                          <CardDescription className="text-base">
+                            I offer professional services
+                          </CardDescription>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                </motion.div>
+
+                <motion.div 
+                  whileHover={{ scale: 1.03 }} 
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Card 
+                    className="h-full cursor-pointer hover:border-purple-500 transition-all hover:shadow-xl hover:shadow-purple-500/10 group bg-card/50 backdrop-blur-sm"
+                    onClick={() => handleRoleSelect("nodeholder")}
+                  >
+                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                      <div className="mx-auto h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors">
+                         <ShieldCheck className="h-8 w-8 text-purple-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <div>
+                          <CardTitle className="text-xl mb-2">Own a TUDAO Node</CardTitle>
+                          <CardDescription className="text-base">
+                            Access rewards and governance
+                          </CardDescription>
+                      </div>
+                    </CardHeader>
+                  </Card>
+                </motion.div>
             </div>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-32">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <FeatureCard 
                 icon={Users} 
                 title="Roles" 
@@ -119,7 +167,7 @@ export default function Home() {
              <FeatureCard 
                 icon={Shield} 
                 title="Security" 
-                description="Embedded Privy wallets and decentralized identity management." 
+                description="Embedded wallets and decentralized identity management." 
             />
         </div>
       </main>
@@ -137,15 +185,6 @@ function FeatureCard({ icon: Icon, title, description }: { icon: any, title: str
             <p className="text-sm text-muted-foreground leading-relaxed">
                 {description}
             </p>
-        </div>
-    )
-}
-
-function ActivityIndicator() {
-    return (
-        <div className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
         </div>
     )
 }
