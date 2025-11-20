@@ -12,41 +12,59 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const { setRole } = useTudao();
   const { user, authenticated, login, logout } = usePrivy();
-  const [isArchitectAuthorized, setIsArchitectAuthorized] = useState(false);
 
+  // Auto-redirect existing users to their dashboard
   useEffect(() => {
-    const checkArchitectAuth = async () => {
-      if (authenticated && user?.walletAddress) {
-        try {
-          const response = await fetch(`/api/auth/check-architect/${user.walletAddress}`);
-          const data = await response.json();
-          setIsArchitectAuthorized(data.isAuthorized);
-        } catch (error) {
-          console.error("Failed to check architect authorization:", error);
-        }
-      } else {
-        setIsArchitectAuthorized(false);
+    if (authenticated && user?.role && user.isExistingUser) {
+      // Existing user with a role - auto-redirect
+      setRole(user.role as any);
+      switch (user.role) {
+        case "consumer":
+          setLocation("/dashboard/consumer");
+          break;
+        case "provider":
+          setLocation("/dashboard/provider");
+          break;
+        case "nodeholder":
+          setLocation("/dashboard/nodeholder");
+          break;
+        case "architect":
+          setLocation("/dashboard/architect");
+          break;
       }
-    };
-    checkArchitectAuth();
-  }, [authenticated, user]);
+    }
+  }, [authenticated, user, setRole, setLocation]);
 
-  const handleRoleSelect = (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
-    setRole(role);
+  const handleRoleSelect = async (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
+    if (!user) return;
     
-    switch (role) {
-      case "consumer":
-        setLocation("/dashboard/consumer");
-        break;
-      case "provider":
-        setLocation("/dashboard/provider");
-        break;
-      case "nodeholder":
-        setLocation("/dashboard/nodeholder");
-        break;
-      case "architect":
-        setLocation("/dashboard/architect");
-        break;
+    try {
+      // Update role in database
+      await fetch(`/api/users/${user.id}/role`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      
+      setRole(role);
+      
+      // Redirect to appropriate dashboard
+      switch (role) {
+        case "consumer":
+          setLocation("/dashboard/consumer");
+          break;
+        case "provider":
+          setLocation("/dashboard/provider");
+          break;
+        case "nodeholder":
+          setLocation("/dashboard/nodeholder");
+          break;
+        case "architect":
+          setLocation("/dashboard/architect");
+          break;
+      }
+    } catch (error) {
+      console.error("Failed to update role:", error);
     }
   };
 
@@ -135,9 +153,9 @@ export default function Home() {
                 )}
             </motion.div>
 
-            {/* Role Selection Cards - Only show when authenticated */}
-            {authenticated && (
-              <div className={`grid grid-cols-1 ${isArchitectAuthorized ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6 ${isArchitectAuthorized ? 'max-w-6xl' : 'max-w-5xl'} mx-auto mb-20`}>
+            {/* Role Selection Cards - Only show for new users without a role */}
+            {authenticated && user && !user.role && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
                 <motion.div 
                   whileHover={{ scale: 1.03 }} 
                   whileTap={{ scale: 0.98 }}
@@ -212,36 +230,21 @@ export default function Home() {
                     </CardHeader>
                   </Card>
                 </motion.div>
-
-                {/* Architect Card - Only for authorized wallets */}
-                {isArchitectAuthorized && (
-                  <motion.div 
-                    whileHover={{ scale: 1.03 }} 
-                    whileTap={{ scale: 0.98 }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Card 
-                      className="h-full cursor-pointer hover:border-orange-500 transition-all hover:shadow-xl hover:shadow-orange-500/10 group bg-card/50 backdrop-blur-sm border-orange-500/20"
-                      onClick={() => handleRoleSelect("architect")}
-                      data-testid="card-role-architect"
-                    >
-                      <CardHeader className="space-y-4 text-center pt-8 pb-8">
-                        <div className="mx-auto h-16 w-16 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                           <Shield className="h-8 w-8 text-orange-500 group-hover:text-white transition-colors" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-xl mb-2">System Architect</CardTitle>
-                            <CardDescription className="text-base">
-                              Admin dashboard & oversight
-                            </CardDescription>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  </motion.div>
-                )}
               </div>
+            )}
+
+            {/* Loading message for existing users being redirected */}
+            {authenticated && user && user.role && user.isExistingUser && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-lg text-muted-foreground">
+                  Redirecting to your dashboard...
+                </p>
+              </motion.div>
             )}
         </div>
 

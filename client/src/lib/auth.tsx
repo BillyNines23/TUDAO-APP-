@@ -4,7 +4,8 @@ export interface User {
   id: string;
   walletAddress: string;
   emailAddress?: string | null;
-  role: string;
+  role: string | null;
+  isExistingUser?: boolean;
   wallet?: {
     address: string;
   };
@@ -42,27 +43,36 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
       // Check if user exists in DB
       const response = await fetch(`/api/users/wallet/${mockWallet}`);
       let userData;
+      let isExisting = false;
       
       if (response.ok) {
+        // Existing user - return with their saved role
         userData = await response.json();
+        isExisting = true;
       } else {
-        // Create new user
+        // New user - check if architect whitelist
+        const archResponse = await fetch(`/api/auth/check-architect/${mockWallet}`);
+        const archData = await archResponse.json();
+        
+        // Create new user with architect role if whitelisted, otherwise no role
         const createResponse = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             walletAddress: mockWallet,
             email: "demo@tudao.xyz",
-            role: "consumer"
+            role: archData.isAuthorized ? "architect" : null
           })
         });
         userData = await createResponse.json();
+        isExisting = false;
       }
       
       setAuthenticated(true);
       setUser({
         ...userData,
         emailAddress: userData.email,
+        isExistingUser: isExisting,
         wallet: { address: userData.walletAddress },
         email: userData.email ? { address: userData.email } : undefined
       });
@@ -74,7 +84,8 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
         id: "mock-id",
         walletAddress: mockWallet,
         emailAddress: "demo@tudao.xyz",
-        role: "consumer",
+        role: null,
+        isExistingUser: false,
         wallet: { address: mockWallet },
         email: { address: "demo@tudao.xyz" }
       });
