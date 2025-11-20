@@ -124,22 +124,6 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/50 p-4">
-        {/* Role Switcher for Demo */}
-        <div className="group-data-[collapsible=icon]:hidden">
-            <label className="text-xs text-sidebar-foreground/50 uppercase font-bold mb-2 block">Switch Role (Demo)</label>
-            <select 
-                className="w-full bg-sidebar-accent/50 border border-sidebar-border rounded p-2 text-xs text-sidebar-foreground outline-none focus:border-sidebar-primary"
-                value={role}
-                onChange={(e) => setRole(e.target.value as any)}
-            >
-                <option value="provider">Provider</option>
-                <option value="consumer">Consumer</option>
-                <option value="nodeholder">Nodeholder</option>
-                <option value="architect">Architect</option>
-            </select>
-        </div>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
