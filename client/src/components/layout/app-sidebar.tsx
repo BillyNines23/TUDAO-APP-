@@ -1,4 +1,4 @@
-import { Home, Wallet, Monitor, ShoppingCart, Settings, Briefcase, DollarSign, Shield, Star, Search, FolderOpen, CreditCard, Server, Vault, Vote, Activity, BarChart, FileCheck, Eye, Cpu } from "lucide-react";
+import { Home, Wallet, Monitor, ShoppingCart, Settings, Briefcase, DollarSign, Shield, Star, Search, FolderOpen, CreditCard, Server, Vault, Vote, Activity, BarChart, FileCheck, Eye, Cpu, ScrollText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
 const commonNav = [
   { title: "Home", url: "/home", icon: Home },
   { title: "Wallet", url: "/wallet", icon: Wallet },
+  { title: "Transactions", url: "/wallet/transactions", icon: ScrollText },
   { title: "Scope Agent", url: "/scope", icon: Monitor },
   { title: "Buy Nodes", url: "/nodes/buy", icon: ShoppingCart },
   { title: "Settings", url: "/settings", icon: Settings },

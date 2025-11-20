@@ -15,6 +15,7 @@ import ConsumerDashboard from "@/pages/dashboard/consumer";
 import NodeholderDashboard from "@/pages/dashboard/nodeholder";
 import ArchitectDashboard from "@/pages/dashboard/architect";
 import WalletPage from "@/pages/wallet";
+import TransactionVerification from "@/pages/wallet/transactions";
 import ScopePage from "@/pages/scope";
 import BuyNodesPage from "@/pages/nodes/buy";
 
@@ -45,6 +46,7 @@ function Router() {
       
       {/* Feature Routes */}
       <Route path="/wallet" component={WalletPage} />
+      <Route path="/wallet/transactions" component={TransactionVerification} />
       <Route path="/scope" component={ScopePage} />
       <Route path="/nodes/buy" component={BuyNodesPage} />
       
