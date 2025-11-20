@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Mock User Interface
 export interface User {
+  id: string;
+  walletAddress: string;
+  emailAddress?: string | null;
+  role: string;
   wallet?: {
     address: string;
   };
@@ -10,7 +13,6 @@ export interface User {
   };
 }
 
-// Mock Context Interface
 interface PrivyContextType {
   login: () => void;
   logout: () => void;
@@ -33,22 +35,50 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
-  // Auto-login simulation for demo purposes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-        // Simulate a connected state for better UX in demo
-        // setAuthenticated(true);
-        // setUser({ wallet: { address: "0x123...abc" } });
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const login = () => {
-    setAuthenticated(true);
-    setUser({ 
-        wallet: { address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F" },
+  const login = async () => {
+    const mockWallet = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+    
+    try {
+      // Check if user exists in DB
+      const response = await fetch(`/api/users/wallet/${mockWallet}`);
+      let userData;
+      
+      if (response.ok) {
+        userData = await response.json();
+      } else {
+        // Create new user
+        const createResponse = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            walletAddress: mockWallet,
+            email: "demo@tudao.xyz",
+            role: "consumer"
+          })
+        });
+        userData = await createResponse.json();
+      }
+      
+      setAuthenticated(true);
+      setUser({
+        ...userData,
+        emailAddress: userData.email,
+        wallet: { address: userData.walletAddress },
+        email: userData.email ? { address: userData.email } : undefined
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      // Fallback to mock data
+      setAuthenticated(true);
+      setUser({ 
+        id: "mock-id",
+        walletAddress: mockWallet,
+        emailAddress: "demo@tudao.xyz",
+        role: "consumer",
+        wallet: { address: mockWallet },
         email: { address: "demo@tudao.xyz" }
-    });
+      });
+    }
   };
 
   const logout = () => {

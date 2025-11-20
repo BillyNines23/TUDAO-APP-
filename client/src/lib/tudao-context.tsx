@@ -1,30 +1,50 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usePrivy } from '@/lib/auth';
 
-// Roles defined in requirements
 export type UserRole = 'provider' | 'consumer' | 'nodeholder' | 'architect';
 
 interface TudaoContextType {
   role: UserRole;
   setRole: (role: UserRole) => void;
   isLoading: boolean;
+  userId: string | null;
 }
 
 const TudaoContext = createContext<TudaoContextType | undefined>(undefined);
 
 export function TudaoProvider({ children }: { children: React.ReactNode }) {
-  // Default to 'consumer' or 'provider' for demo purposes
-  const [role, setRole] = useState<UserRole>('provider');
+  const { user, authenticated } = usePrivy();
+  const [role, setRoleState] = useState<UserRole>('provider');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simulate some initial loading or role fetching
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+    if (authenticated && user) {
+      setRoleState(user.role as UserRole);
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
+    }
+  }, [user, authenticated]);
+
+  const setRole = async (newRole: UserRole) => {
+    setRoleState(newRole);
+    
+    // Update role in database
+    if (user?.id) {
+      try {
+        await fetch(`/api/users/${user.id}/role`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: newRole })
+        });
+      } catch (error) {
+        console.error("Failed to update role:", error);
+      }
+    }
+  };
 
   return (
-    <TudaoContext.Provider value={{ role, setRole, isLoading }}>
+    <TudaoContext.Provider value={{ role, setRole, isLoading, userId: user?.id || null }}>
       {children}
     </TudaoContext.Provider>
   );
