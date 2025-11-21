@@ -38,7 +38,15 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async () => {
-    const mockWallet = "0x91ab951ab5c31a0d475d3539099c09d7fc307a75";
+    // Generate random wallet or use architect wallet for testing
+    // Check localStorage for preferred test wallet
+    let mockWallet = localStorage.getItem('mockWallet');
+    
+    if (!mockWallet) {
+      // Default to a new random wallet for testing
+      mockWallet = "0x" + Math.random().toString(16).substring(2, 42).padEnd(40, '0');
+      localStorage.setItem('mockWallet', mockWallet);
+    }
     
     try {
       // Check if user exists in DB
