@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
-import { Users, Zap, Database, Briefcase, ShieldCheck, Shield, Wallet } from "lucide-react";
+import { Users, Zap, Database, Briefcase, ShieldCheck, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
 import { useTudao } from "@/lib/tudao-context";
@@ -11,62 +11,34 @@ import { usePrivy } from "@/lib/auth";
 export default function Home() {
   const [, setLocation] = useLocation();
   const { setRole } = useTudao();
-  const { user, authenticated, login, logout } = usePrivy();
+  const { user, authenticated, login } = usePrivy();
 
-  // Auto-redirect existing users to their dashboard after login
+  // Auto-routing after login
   useEffect(() => {
-    if (authenticated && user?.role) {
-      // User has a role - redirect to their dashboard
-      setRole(user.role as any);
-      switch (user.role) {
-        case "consumer":
-          setLocation("/dashboard/consumer");
-          break;
-        case "provider":
-          setLocation("/dashboard/provider");
-          break;
-        case "nodeholder":
-          setLocation("/dashboard/nodeholder");
-          break;
-        case "architect":
-          setLocation("/dashboard/architect");
-          break;
+    if (authenticated && user) {
+      if (user.role) {
+        // Existing user with role - redirect to dashboard
+        setRole(user.role as any);
+        switch (user.role) {
+          case "consumer":
+            setLocation("/dashboard/consumer");
+            break;
+          case "provider":
+            setLocation("/dashboard/provider");
+            break;
+          case "nodeholder":
+            setLocation("/dashboard/nodeholder");
+            break;
+          case "architect":
+            setLocation("/dashboard/architect");
+            break;
+        }
+      } else {
+        // New user without role - redirect to onboarding
+        setLocation("/onboarding/path");
       }
     }
   }, [authenticated, user, setRole, setLocation]);
-
-  const handleRoleSelect = async (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
-    if (!user) return;
-    
-    try {
-      // Update role in database
-      await fetch(`/api/users/${user.id}/role`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role }),
-      });
-      
-      setRole(role);
-      
-      // Redirect to appropriate dashboard
-      switch (role) {
-        case "consumer":
-          setLocation("/dashboard/consumer");
-          break;
-        case "provider":
-          setLocation("/dashboard/provider");
-          break;
-        case "nodeholder":
-          setLocation("/dashboard/nodeholder");
-          break;
-        case "architect":
-          setLocation("/dashboard/architect");
-          break;
-      }
-    } catch (error) {
-      console.error("Failed to update role:", error);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden relative selection:bg-primary/20">
@@ -114,141 +86,98 @@ export default function Home() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Do The Work.</span>
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-12">
-                    Decentralized task orchestration, node governance, and autonomous scope agents.
+                    Decentralized task orchestration, node governance, and autonomous scope agents. Join the future of work.
                 </p>
                 
-                {/* CTA for not authenticated users */}
-                {!authenticated && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="mb-12 flex gap-4 justify-center"
+                {/* Login Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="mb-16 flex gap-4 justify-center"
+                >
+                  <Button 
+                    onClick={login}
+                    size="lg"
+                    className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 h-auto"
+                    data-testid="button-login"
                   >
-                    <Button 
-                      onClick={login}
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 h-auto"
-                      data-testid="button-login-hero"
-                    >
-                      Log In
-                    </Button>
-                    <Button 
-                      onClick={login}
-                      size="lg"
-                      variant="outline"
-                      className="text-lg px-8 py-6 h-auto"
-                      data-testid="button-signup-hero"
-                    >
-                      Create Account
-                    </Button>
-                  </motion.div>
-                )}
+                    Log In
+                  </Button>
+                  <Button 
+                    onClick={login}
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-6 h-auto"
+                    data-testid="button-create-account"
+                  >
+                    Create Account
+                  </Button>
+                </motion.div>
             </motion.div>
 
-            {/* Role Selection - Only show for authenticated users without a role */}
-            {authenticated && user && !user.role && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center mb-8"
-                >
-                  <h2 className="text-3xl font-bold mb-2">Choose Your Role</h2>
-                  <p className="text-muted-foreground">Select how you want to participate in the TUDAO ecosystem</p>
-                </motion.div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
-                <motion.div 
-                  whileHover={{ scale: 1.03 }} 
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <Card 
-                    className="h-full cursor-pointer hover:border-blue-500 transition-all hover:shadow-xl hover:shadow-blue-500/10 group bg-card/50 backdrop-blur-sm"
-                    onClick={() => handleRoleSelect("consumer")}
-                  >
-                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
-                      <div className="mx-auto h-16 w-16 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                         <Users className="h-8 w-8 text-blue-500 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                          <CardTitle className="text-xl mb-2">Hire a Provider</CardTitle>
-                          <CardDescription className="text-base">
-                            I need help with a service
-                          </CardDescription>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                </motion.div>
-
-                <motion.div 
-                  whileHover={{ scale: 1.03 }} 
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Card 
-                    className="h-full cursor-pointer hover:border-green-500 transition-all hover:shadow-xl hover:shadow-green-500/10 group bg-card/50 backdrop-blur-sm"
-                    onClick={() => handleRoleSelect("provider")}
-                  >
-                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
-                      <div className="mx-auto h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-colors">
-                         <Briefcase className="h-8 w-8 text-green-500 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                          <CardTitle className="text-xl mb-2">Become a Provider</CardTitle>
-                          <CardDescription className="text-base">
-                            I offer professional services
-                          </CardDescription>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                </motion.div>
-
-                <motion.div 
-                  whileHover={{ scale: 1.03 }} 
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Card 
-                    className="h-full cursor-pointer hover:border-purple-500 transition-all hover:shadow-xl hover:shadow-purple-500/10 group bg-card/50 backdrop-blur-sm"
-                    onClick={() => handleRoleSelect("nodeholder")}
-                  >
-                    <CardHeader className="space-y-4 text-center pt-8 pb-8">
-                      <div className="mx-auto h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500 group-hover:text-white transition-colors">
-                         <ShieldCheck className="h-8 w-8 text-purple-500 group-hover:text-white transition-colors" />
-                      </div>
-                      <div>
-                          <CardTitle className="text-xl mb-2">Own a TUDAO Node</CardTitle>
-                          <CardDescription className="text-base">
-                            Access rewards and governance
-                          </CardDescription>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                </motion.div>
-                </div>
-              </>
-            )}
-
-            {/* Loading message for users with role being redirected */}
-            {authenticated && user && user.role && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-12"
+            {/* Informational Cards - Not role assignment */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
               >
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-lg text-muted-foreground">
-                  Redirecting to your dashboard...
-                </p>
+                <Card className="h-full bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                  <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                    <div className="mx-auto h-16 w-16 rounded-full bg-blue-500/10 flex items-center justify-center">
+                       <Users className="h-8 w-8 text-blue-500" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-xl mb-2">Hire a Provider</CardTitle>
+                        <CardDescription className="text-base">
+                          Find skilled professionals for your projects. Browse verified providers and get quotes.
+                        </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
               </motion.div>
-            )}
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Card className="h-full bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                  <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                    <div className="mx-auto h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center">
+                       <Briefcase className="h-8 w-8 text-green-500" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-xl mb-2">Become a Provider</CardTitle>
+                        <CardDescription className="text-base">
+                          Offer your skills and earn. Build reputation, connect with clients, and grow your business.
+                        </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+              >
+                <Card className="h-full bg-card/50 backdrop-blur-sm hover:shadow-lg transition-shadow">
+                  <CardHeader className="space-y-4 text-center pt-8 pb-8">
+                    <div className="mx-auto h-16 w-16 rounded-full bg-purple-500/10 flex items-center justify-center">
+                       <ShieldCheck className="h-8 w-8 text-purple-500" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-xl mb-2">Buy a Node</CardTitle>
+                        <CardDescription className="text-base">
+                          Own infrastructure, earn rewards, and participate in governance of the network.
+                        </CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </motion.div>
+            </div>
         </div>
 
         {/* Features Grid */}
@@ -256,7 +185,7 @@ export default function Home() {
             <FeatureCard 
                 icon={Users} 
                 title="Roles" 
-                description="Provider, Consumer, Nodeholder, Architect. Define your contribution." 
+                description="Provider, Consumer, Nodeholder. Define your contribution to the network." 
             />
             <FeatureCard 
                 icon={Zap} 

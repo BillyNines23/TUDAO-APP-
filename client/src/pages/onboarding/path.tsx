@@ -1,6 +1,7 @@
 import { useLocation } from "wouter";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useTudao } from "@/lib/tudao-context";
+import { usePrivy } from "@/lib/auth";
 import { motion } from "framer-motion";
 import { Briefcase, Users, ShieldCheck } from "lucide-react";
 import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
@@ -8,27 +9,38 @@ import generatedLogo from "@assets/generated_images/metallic_tudao_logo.png";
 export default function OnboardingPath() {
   const [, setLocation] = useLocation();
   const { setRole } = useTudao();
+  const { user, updateUser } = usePrivy();
 
-  const handleSelect = (role: 'consumer' | 'provider' | 'nodeholder' | 'architect') => {
-    setRole(role);
+  const handleSelect = async (role: 'consumer' | 'provider' | 'nodeholder') => {
+    if (!user) return;
     
-    // Simulate API call
-    console.log(`Role set to: ${role}`);
+    try {
+      // Save role to database
+      await fetch(`/api/users/${user.id}/role`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      
+      // Update Privy user state with new role
+      updateUser({ role });
+      
+      setRole(role);
 
-    switch (role) {
-      case "consumer":
-        setLocation("/dashboard/consumer");
-        break;
-      case "provider":
-        // In a real app, this would go to an onboarding form first
-        setLocation("/dashboard/provider"); 
-        break;
-      case "nodeholder":
-        setLocation("/dashboard/nodeholder");
-        break;
-      case "architect":
-        setLocation("/dashboard/architect");
-        break;
+      // Redirect to dashboard
+      switch (role) {
+        case "consumer":
+          setLocation("/dashboard/consumer");
+          break;
+        case "provider":
+          setLocation("/dashboard/provider"); 
+          break;
+        case "nodeholder":
+          setLocation("/dashboard/nodeholder");
+          break;
+      }
+    } catch (error) {
+      console.error("Failed to set role:", error);
     }
   };
 
@@ -124,7 +136,7 @@ export default function OnboardingPath() {
                  <ShieldCheck className="h-8 w-8 text-purple-500 group-hover:text-white transition-colors" />
               </div>
               <div>
-                  <CardTitle className="text-xl mb-2">I Own a TUDAO Node</CardTitle>
+                  <CardTitle className="text-xl mb-2">I Own a Node</CardTitle>
                   <CardDescription className="text-base">
                     Access node statistics, rewards, and governance.
                   </CardDescription>

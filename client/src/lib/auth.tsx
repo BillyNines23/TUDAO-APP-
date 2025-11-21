@@ -20,6 +20,7 @@ interface PrivyContextType {
   authenticated: boolean;
   user: User | null;
   ready: boolean;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const PrivyContext = createContext<PrivyContextType | null>(null);
@@ -99,8 +100,14 @@ export const PrivyProvider = ({ children, appId, config }: any) => {
     setUser(null);
   };
 
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      setUser({ ...user, ...updates });
+    }
+  };
+
   return (
-    <PrivyContext.Provider value={{ login, logout, authenticated, user, ready: true }}>
+    <PrivyContext.Provider value={{ login, logout, authenticated, user, ready: true, updateUser }}>
       {children}
     </PrivyContext.Provider>
   );

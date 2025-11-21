@@ -1,0 +1,148 @@
+Update the TUDAO Dashboard project to use the following unified login and homepage flow.
+This flow must be implemented exactly as written:
+
+1. HOMEPAGE (for all visitors)
+
+The homepage (/) must include:
+
+A. Public Landing Section
+
+TUDAO logo
+
+Headline + tagline
+
+Short explanation of TUDAO
+
+Three simple cards:
+
+“Hire a Provider”
+
+“Become a Provider”
+
+“Buy a Node”
+
+These cards do NOT assign a role — they only scroll or link to informational text.
+
+B. Login Buttons (normal Web2-style)
+
+Display two buttons:
+
+Log In
+
+Create Account
+
+Both buttons must trigger the Privy Connect flow (embedded wallet allowed).
+
+The homepage must NOT mention Architect, Developer, or Admin.
+
+2. AFTER LOGIN — DETERMINE WHETHER USER IS NEW OR RETURNING
+
+When the user completes login:
+
+A. If wallet address is MY architect wallet
+
+(my wallet address is: PUT YOUR ADDRESS HERE)
+
+→ Auto-assign role = “architect”
+→ Redirect immediately to /dashboard/architect
+→ Do NOT show role selection
+→ Do NOT show onboarding
+
+This must work silently in the background.
+
+B. If user exists in database AND already has a role
+
+→ Automatically redirect them to their correct dashboard
+
+Routing rules:
+
+provider → /dashboard/provider
+
+consumer → /dashboard/consumer
+
+nodeholder → /dashboard/nodeholder
+
+architect → /dashboard/architect
+
+C. If user is NEW (no role set yet)
+
+→ Redirect to /onboarding/path
+This page shows:
+
+Hire a Provider
+
+Become a Provider
+
+I Own a Node
+
+Selecting one sets their role in the database and routes them to the correct dashboard.
+
+3. REMOVE CLUTTER FROM PUBLIC VIEW
+The following MUST NOT appear on the homepage:
+
+Architect Login
+
+Developer Login
+
+Role Switcher
+
+Nodeholder workspace
+
+Provider workspace
+
+Any internal dashboards
+
+Any debug UI
+
+The homepage should look like a normal SaaS product.
+
+4. CLEAN SIDEBAR / DASHBOARD ACCESS
+
+The sidebar must only appear AFTER login.
+Do NOT show sidebar on:
+
+Home page
+
+Onboarding Path
+
+Login
+
+Create Account
+
+5. SUMMARY OF THE REQUIRED LOGIC
+WHEN USER ARRIVES AT “/”:
+
+Show landing page + login buttons.
+
+AFTER LOGIN:
+
+If architect wallet → Architect Dashboard
+
+If returning user → Their role dashboard
+
+If new user → Role Selection page
+
+This must happen automatically without user interaction.
+
+6. IMPLEMENTATION NOTES
+
+Store user roles in Supabase or local mock DB (for now)
+
+Add a helper function getUserRole(walletAddress)
+
+Use middleware or server components to handle routing
+
+The homepage must not require authentication
+
+Deliverables
+
+Updated homepage
+
+Removed Architect Login from public pages
+
+Working new/returning user auto-router
+
+Role selection page only for first-time users
+
+Dashboard accessible ONLY after login
+"**
