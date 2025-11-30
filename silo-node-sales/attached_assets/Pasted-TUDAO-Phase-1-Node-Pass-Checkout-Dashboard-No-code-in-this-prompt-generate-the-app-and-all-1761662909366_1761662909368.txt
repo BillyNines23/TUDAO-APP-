@@ -1,0 +1,210 @@
+TUDAO — Phase-1 “Node Pass” (Checkout + Dashboard)
+
+No code in this prompt; generate the app and all wiring from these specs.
+
+1) Mission & Outcome
+
+Build a small, reliable checkout + owner dashboard that sells Node Licenses (NFTs) for TUDAO. Buyers select a tier, complete payment, the app mints the correct NFT (via Thirdweb) to the buyer’s wallet, writes a sale record to Supabase, and shows an Owner Dashboard with badge & setup links.
+Phase-1 is a capital-raise launcher—marketing/landing already exists separately. This app handles /checkout, /success, /dashboard only.
+
+2) Tiers & Rules (must not change in code)
+
+Verifier — $500
+
+Professional — $5,000
+
+Founder — $10,000 (cap 300, non-transferable until MVP unlock vote, passive-first)
+
+Show Founder lock note on checkout, success, and receipts.
+
+Compliance copy on checkout & success:
+“Rewards are policy-based and variable and may change by DAO vote. Founder nodes are non-transferable until an MVP unlock vote. This is not financial, legal, or tax advice.”
+
+3) Hosting & Surroundings (context)
+
+Landing site is already handled (Famous export → S3/CloudFront).
+
+This app: host on AWS Amplify (connected to GitHub).
+
+Assets (badge PNGs, setup PDF) served from S3/CloudFront via public URLs.
+
+Thirdweb: NFT Drop contracts already deployed on Base Sepolia (test); later we will switch to Base mainnet with env vars.
+
+Supabase: used for sales records and dashboard data.
+
+4) Environments & Feature Flags (env-driven, no code edits to switch)
+
+CHAIN_ID = 84532 (Base Sepolia test) or 8453 (Base mainnet)
+
+NETWORK_NAME = base-sepolia | base
+
+DISABLE_CARD_ONRAMP = true|false (test = true; mainnet = false)
+
+EMAIL_DISABLED = true|false
+
+Prices: TIER_VERIFIER_PRICE_USD=500, TIER_PROFESSIONAL_PRICE_USD=5000, TIER_FOUNDER_PRICE_USD=10000
+
+Inventory caps (envs): INVENTORY_CAP_VERIFIER, INVENTORY_CAP_PROFESSIONAL, INVENTORY_CAP_FOUNDER
+
+Founder note: FOUNDER_NON_TRANSFERABLE_NOTE="Founder nodes are non-transferable until an MVP unlock vote."
+
+Thirdweb (envs):
+
+THIRDWEB_CLIENT_ID
+
+CONTRACT_VERIFIER (Sepolia now, mainnet later)
+
+CONTRACT_PROFESSIONAL
+
+CONTRACT_FOUNDER
+
+Supabase (envs):
+
+SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+On-ramp (mainnet only):
+
+ONRAMP_PROVIDER = coinbase_onramp | transak | moonpay | stripe_crypto
+
+ONRAMP_API_KEY
+
+Email (optional at launch):
+
+EMAIL_PROVIDER = resend | postmark | ses
+
+EMAIL_API_KEY
+
+SUPPORT_EMAIL (e.g., receipts@tradeuniondao.com)
+
+EMAIL_FROM_NAME (e.g., TUDAO Receipts)
+
+Assets (S3/CloudFront URLs):
+
+ASSETS_BADGE_VERIFIER_URL, ASSETS_BADGE_PROFESSIONAL_URL, ASSETS_BADGE_FOUNDER_URL
+
+ASSETS_SETUP_PDF_URL
+
+5) Pages & UX (exact behavior)
+
+A) /checkout
+
+Accepts ?tier=Verifier|Professional|Founder.
+
+Shows tier name, price, Founder note (if Founder), compliance text, and a Payment Modal with three buttons:
+
+Pay with Card → USDC on Base (uses on-ramp widget; hide if DISABLE_CARD_ONRAMP=true)
+
+Pay with Crypto (USDC • Base) (wallet connect; auto switch to Base or Base Sepolia)
+
+Bank / Wire (collect name, email, wallet; write Supabase row with status=pending_wire; display instructions if email is enabled)
+
+Test Mode Banner when on Sepolia:
+“TEST MODE — Contracts on Base Sepolia. Card on-ramp disabled. No real funds accepted.”
+
+Helper toasts:
+
+wrong network → “Please switch to [Base | Base Sepolia].”
+
+insufficient USDC → prompt to top-up (or card if enabled).
+
+missing gas → “Add ~$1 ETH on Base for network fees.”
+
+B) /success
+
+Shows License ID, Tier, Wallet (short), Date.
+
+Buttons: Open Dashboard, Download Badge, Open Setup PDF.
+
+If email disabled: show note “Receipt saved to dashboard. Email receipts will be enabled at launch.”
+
+C) /dashboard
+
+Shows Tier, License ID, Wallet, Purchase date from Supabase.
+
+Buttons: Download Badge, Select Next Step (Self / Managed Operator / Cloud Waitlist — store in Supabase), Setup PDF, Contact Support.
+
+If status=pending_wire, show “Pending Wire” pill and brief instructions.
+
+6) Integrations & Flows
+
+Thirdweb mint:
+After a successful payment (or test action), mint/claim the correct tier NFT to the connected wallet using the provided contract address for the current network.
+
+Supabase record (table = buyers):
+Fields:
+id (uuid) | created_at | email | name | wallet | tier | price_usd | payment_method (card|crypto|wire|test) | status (pending_wire|active|refunded) | license_id | tx_hash | next_step (self|managed|cloud) | receipt_sent (bool)
+
+Write the row immediately after mint (or after wire form submission with pending_wire).
+
+When wire funds arrive (manual backoffice step), changing status to active should trigger mint + receipt.
+
+Email receipts (optional now):
+
+If EMAIL_DISABLED=true, skip send and show the skip-note on success.
+
+If enabled, send a simple HTML receipt with: Tier, License ID, Wallet (short), Date, Dashboard link, Badge link, Setup PDF link, plus the compliance note.
+
+7) UI Strings that must appear
+
+Founder checkout: “Non-transferable until MVP unlock vote.”
+
+Footer compliance on checkout & success:
+“Rewards are policy-based and variable and may change by DAO vote. Founder nodes are non-transferable until an MVP unlock vote. This is not financial, legal, or tax advice.”
+
+Hints by tier in modal:
+
+Founder: “For $10k, Bank/Wire is recommended to avoid card limits.”
+
+Professional: “If your card caps at $5k, choose Bank/Wire.”
+
+8) Non-functional requirements
+
+Mobile-first/responsive.
+
+All behavior controlled by env vars (toggle test/mainnet, show/hide Card, email on/off).
+
+Secrets stay server-side; no keys in client bundle.
+
+Clear errors; never leave a user stuck without guidance.
+
+9) Acceptance Criteria — Definition of Done
+
+Test Mode (Base Sepolia)
+
+From the landing, “Buy Now → Verifier” opens /checkout?tier=Verifier with TEST MODE banner and Card button hidden.
+
+Using Crypto (Sepolia) or a Test Mint action, the app:
+
+Mints the Verifier NFT to the wallet (Sepolia),
+
+Writes a buyers row in Supabase with payment_method=crypto|test and status=active,
+
+Shows /success → /dashboard with correct Tier/License/Wallet/Date, and working Download Badge/Setup PDF links.
+
+Wrong network, no gas, or no USDC → appropriate toasts and instructions.
+
+Founder checkout shows the non-transferability note.
+
+Mainnet (Base) — after env switch & mainnet contracts
+
+CHAIN_ID=8453, NETWORK_NAME=base, DISABLE_CARD_ONRAMP=false, mainnet contract addresses set.
+
+Card → USDC on Base: on-ramp funds wallet → “Complete Purchase” → mint → Supabase row → receipt email (if enabled) → Success/Dashboard OK.
+
+Bank/Wire: creates pending_wire; when marked paid (backoffice), triggers mint + receipt; dashboard switches to Active.
+
+Inventory caps enforced; Sold-Out disables Buy and offers waitlist capture (optional).
+
+All compliance text visible on checkout & receipt.
+
+10) Deliverables (what you must output)
+
+A working /checkout, /success, /dashboard app wired to the described env vars and flows.
+
+README describing: required env vars, how to run locally, how to deploy on Amplify, and how to flip test → mainnet.
+
+Minimal Supabase schema notes (for buyers) and a short operator note on marking wire payments as paid.
+
+No admin UI required; operators will use Supabase console for now.
+
+Out of scope for Phase-1: fancy admin tools, complex auth, dispute flows, marketplace UI, or verification job logic.

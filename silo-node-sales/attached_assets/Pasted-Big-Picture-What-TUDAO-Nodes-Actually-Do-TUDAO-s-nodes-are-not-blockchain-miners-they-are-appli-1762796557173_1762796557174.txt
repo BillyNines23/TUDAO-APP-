@@ -1,0 +1,96 @@
+Big Picture — What TUDAO Nodes Actually Do
+
+TUDAO’s nodes are not blockchain miners — they are application-layer service validators.
+They sit between users, vendors, and the blockchain contracts that manage payments, scopes, and reputation.
+
+They do three core things:
+
+Function	Description	Where it happens
+1. Transactional Validation	Verify that on-chain interactions (job creation, acceptance, milestone completion) align with DAO policy and data integrity.	On-chain + off-chain
+2. Workflow Orchestration	Coordinate AI-generated scopes, vendor assignments, and customer updates. They act as decentralized “agents” running small, automatable tasks.	Off-chain
+3. Governance & Emission Proof	Prove uptime, task verification, and participation to earn FEUs and maintain DAO trust score.	Off-chain → On-chain summary
+🧩 How It Works in Practice
+
+Here’s the logical flow:
+
+A homeowner or property manager creates a project via the TUDAO platform (e.g., HVAC repair request).
+
+The AI Scope Engine generates a work order and pushes it to the network.
+
+Professional nodes pull the job from a queue → validate cost, scope, and vendor info.
+
+Verifier nodes cross-check finished jobs, confirming “proof of completion.”
+
+Founding / Architect nodes timestamp and sign the validated data → push summary to the smart contract.
+
+Payments release automatically from escrow → node activity earns FEUs → emissions distribute to active participants.
+
+🧱 Node Roles Breakdown
+
+You can explain each role like this:
+
+Node Role	Core Function	Typical Tasks
+🧠 Architect Node	Master coordination node; governs network settings and emission policy.	- Monitor all subnodes
+- Validate new contracts
+- Manage FEU weighting
+- Approve new license tiers
+👑 Regent Nodes	Policy enforcement and system reliability; handle governance and configuration updates.	- Enforce node uptime standards
+- Approve or deny node registrations
+- Log high-level governance votes
+🛡️ Guardian Nodes	Integrity & security layer; monitor data consistency and fraud detection.	- Scan for duplicated or fake job entries
+- Hash comparison / integrity proofs
+- Alert system anomalies
+🗳️ Councilor Nodes	Governance and communication layer; handle proposals, DAO voting, and human validation.	- Collate votes and proposals
+- Distribute DAO announcements
+- Aggregate Snapshot or off-chain governance results
+🔮 Oracle Nodes	Bridge between external systems and TUDAO; provide data feeds, cost indexes, and vendor ratings.	- Pull market data (e.g., material cost)
+- Update AI models
+- Feed verified info back to network
+🪶 Simplified MVP (Phase 2–3 Focus)
+
+For your current MVP, these roles collapse into 3 functional buckets:
+
+Governance & uptime (Founding nodes: Architect + Regent + Guardian + Councilor)
+
+Task handling (Professional nodes – in later phase)
+
+Verification (Verifier nodes – in later phase)
+
+That means:
+
+Right now, your family nodes will perform governance, uptime tracking, and registry validation.
+Later, as the AI/job marketplace layer launches, they’ll start coordinating actual work orders and payment flows.
+
+🧮 What Each Node Does Today (MVP)
+
+Until smart contracts and jobs are integrated:
+
+Function	What happens now	How to show it visually
+Heartbeat / Proof-of-Uptime	Each node sends a ping every 60 seconds.	Dashboard shows ✅ “online” with last heartbeat time.
+Registration Proof	Each node is registered under a verified wallet address.	Node table shows wallet + title (Architect, Regent, etc.).
+Governance Readiness	Wallets hold Founding NFTs (FEUs) and appear in Snapshot.	Governance page shows eligible voters.
+Emission Simulation	Each node earns simulated FEUs for uptime.	FEU counter increases every hour/day online.
+
+This is your MVP demonstration:
+a visible, living network of independent wallets + active nodes + on-chain licenses.
+
+🧠 Later Expansion — Real Work
+
+When the TUDAO platform’s job marketplace goes live, nodes will:
+
+Host the AI Scope Engine microservice (each node can generate scopes via API).
+
+Handle off-chain escrow state (bridging customer requests and smart contracts).
+
+Run verification oracles to confirm work completion.
+
+Participate in reputation scoring and tokenized governance.
+
+🧩 TL;DR — “What do TUDAO Nodes actually do?”
+
+TUDAO nodes are decentralized service agents that keep the system fair, transparent, and functional.
+They record uptime, verify workflows, and coordinate AI-powered contracting processes — ensuring every job is scoped, validated, and paid through the DAO.
+
+In short:
+
+They’re the “backbone servers” of TUDAO — part governance, part validation, part proof-of-trust.

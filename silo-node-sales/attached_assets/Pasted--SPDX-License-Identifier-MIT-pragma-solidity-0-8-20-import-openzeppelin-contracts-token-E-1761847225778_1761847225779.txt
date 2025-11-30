@@ -1,0 +1,291 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+
+contract TUDaoLicense is ERC721, AccessControl {
+    using Strings for uint256;
+    using Strings for uint8;
+
+    bytes32 public constant PROCESSOR_ROLE = keccak256("PROCESSOR_ROLE");
+
+    bool public transfersEnabled = false;
+    bool public paused = false;
+
+    enum Tier { ARCHITECT, FOUNDING, PROFESSIONAL, VERIFIER, FAMILY }
+    enum EmissionClass { NONE, FOUNDING_EQ, PROFESSIONAL_EQ, VERIFIER_EQ }
+
+    struct TierInfo {
+        uint256 cap;
+        uint256 minted;
+        uint256 priceRef;
+        uint8 base;
+        uint8 bonus;
+    }
+    mapping(Tier => TierInfo) public tiers;
+
+    struct FamilyMeta {
+        string title;
+        string colorHex;
+        bool exists;
+    }
+    mapping(uint256 => FamilyMeta) public familyMeta;
+
+    mapping(address => uint256) public foundingPacksPurchased;
+    mapping(uint256 => EmissionClass) public emissionClassOf;
+    mapping(uint256 => uint16) public emissionUnitsOf;
+    mapping(uint256 => Tier) public tierOf;
+
+    event TransfersEnabledSet(bool enabled);
+    event PausedSet(bool paused);
+    event TierSet(uint8 tier, uint256 cap, uint256 priceRef, uint8 base, uint8 bonus);
+    event LicenseMinted(
+        address indexed to,
+        Tier tier,
+        uint8 packs,
+        uint256[] tokenIds,
+        uint16[] emissionUnits,
+        EmissionClass emissionClass
+    );
+    event FamilyBadgeMinted(address indexed to, uint256 tokenId, string title, string colorHex);
+    event EmissionUnitsSet(uint256 tokenId, uint16 units);
+    event AdminBurned(uint256 tokenId);
+
+    uint256 private _nextTokenId = 1;
+
+    modifier notPaused() {
+        require(!paused, "TULIC: paused");
+        _;
+    }
+
+    constructor(address admin) ERC721("TUDAO License", "TULIC") {
+        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function _update(address to, uint256 tokenId, address auth)
+        internal
+        override
+        returns (address)
+    {
+        if (!transfersEnabled) {
+            bool isMint = auth == address(0);
+            bool isBurn = to == address(0);
+            require(isMint || isBurn, "TULIC: soulbound");
+        }
+        return super._update(to, tokenId, auth);
+    }
+
+    function setTransfersEnabled(bool _enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        transfersEnabled = _enabled;
+        emit TransfersEnabledSet(_enabled);
+    }
+
+    function setPaused(bool _paused) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        paused = _paused;
+        emit PausedSet(_paused);
+    }
+
+    function setTier(
+        Tier t,
+        uint256 cap,
+        uint256 priceRef,
+        uint8 base,
+        uint8 bonus
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        tiers[t] = TierInfo({
+            cap: cap,
+            minted: tiers[t].minted,
+            priceRef: priceRef,
+            base: base,
+            bonus: bonus
+        });
+        emit TierSet(uint8(t), cap, priceRef, base, bonus);
+    }
+
+    function mintLicense(address to, Tier t, uint8 packs)
+        external
+        onlyRole(PROCESSOR_ROLE)
+        notPaused
+    {
+        require(t != Tier.FAMILY, "TULIC: family via separate mint");
+        TierInfo storage info = tiers[t];
+        uint8 base = info.base;
+        uint8 bonus = info.bonus;
+
+        uint16 units = uint16(base) * packs;
+        uint16 totalBonus = 0;
+
+        EmissionClass emissionClass = _defaultEmissionClassForTier(t);
+
+        if (bonus > 0) {
+            if (t == Tier.FOUNDING) {
+                uint256 already = foundingPacksPurchased[to];
+                if (already == 0) {
+                    totalBonus = uint16(bonus);
+                } else {
+                    totalBonus = uint16(bonus / 2);
+                }
+                foundingPacksPurchased[to] = already + 1;
+            } else {
+                totalBonus = uint16(bonus);
+            }
+        }
+
+        uint16 totalUnits = units + totalBonus;
+        require(info.minted + totalUnits <= info.cap, "TULIC: cap exceeded");
+
+        uint256[] memory tokenIds = new uint256[](totalUnits);
+        uint16[] memory emissionUnitsArr = new uint16[](totalUnits);
+
+        for (uint16 i = 0; i < totalUnits; i++) {
+            uint256 tokenId = _nextTokenId++;
+            _safeMint(to, tokenId);
+            emissionClassOf[tokenId] = emissionClass;
+            emissionUnitsOf[tokenId] = 1;
+            tierOf[tokenId] = t;
+            tokenIds[i] = tokenId;
+            emissionUnitsArr[i] = 1;
+        }
+
+        info.minted += totalUnits;
+        emit LicenseMinted(to, t, packs, tokenIds, emissionUnitsArr, emissionClass);
+    }
+
+    function mintFamilyBadge(address to, string calldata title, string calldata colorHex)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        notPaused
+    {
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(to, tokenId);
+        tierOf[tokenId] = Tier.FAMILY;
+        emissionClassOf[tokenId] = EmissionClass.FOUNDING_EQ;
+        emissionUnitsOf[tokenId] = 15;
+        familyMeta[tokenId] = FamilyMeta(title, colorHex, true);
+        emit FamilyBadgeMinted(to, tokenId, title, colorHex);
+    }
+
+    function setEmissionUnits(uint256 tokenId, uint16 units)
+        external
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        require(_ownerOf(tokenId) != address(0), "TULIC: nonexistent token");
+        emissionUnitsOf[tokenId] = units;
+        emit EmissionUnitsSet(tokenId, units);
+    }
+
+    function adminBurn(uint256 tokenId) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _burn(tokenId);
+        emit AdminBurned(tokenId);
+    }
+
+    function _defaultEmissionClassForTier(Tier t) internal pure returns (EmissionClass) {
+        if (t == Tier.ARCHITECT || t == Tier.FOUNDING) return EmissionClass.FOUNDING_EQ;
+        if (t == Tier.PROFESSIONAL) return EmissionClass.PROFESSIONAL_EQ;
+        if (t == Tier.VERIFIER) return EmissionClass.VERIFIER_EQ;
+        return EmissionClass.NONE; // FAMILY set in mintFamilyBadge
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_ownerOf(tokenId) != address(0), "TULIC: nonexistent token");
+
+        Tier t = tierOf[tokenId];
+        EmissionClass ec = emissionClassOf[tokenId];
+        uint16 eu = emissionUnitsOf[tokenId];
+
+        string memory tierName = _tierName(t);
+        string memory ecName = _emissionClassName(ec);
+
+        string memory bg = _tierColor(t, tokenId);
+        string memory subtitle = tierName;
+        string memory attrFamily = "";
+
+        if (t == Tier.FAMILY) {
+            FamilyMeta memory fm = familyMeta[tokenId];
+            if (fm.exists) {
+                subtitle = string(abi.encodePacked(subtitle, " - ", fm.title));
+                // Proper trait object for Title
+                attrFamily = string(
+                    abi.encodePacked(',{"trait_type":"Title","value":"', fm.title, '"}')
+                );
+            }
+        }
+
+        string memory svg = string(
+            abi.encodePacked(
+                '<svg width="320" height="200" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">',
+                '<rect width="320" height="200" fill="', bg, '"/>',
+                '<text x="50%" y="55" text-anchor="middle" font-size="22" fill="#111" font-family="monospace">TUDAO LICENSE</text>',
+                '<text x="50%" y="90" text-anchor="middle" font-size="16" fill="#333" font-family="monospace">', subtitle, '</text>',
+                '<text x="50%" y="120" text-anchor="middle" font-size="12" fill="#444" font-family="monospace">Tier: ', tierName, '</text>',
+                '<text x="50%" y="140" text-anchor="middle" font-size="12" fill="#444" font-family="monospace">EmissionClass: ', ecName, '</text>',
+                '<text x="50%" y="160" text-anchor="middle" font-size="12" fill="#444" font-family="monospace">EmissionUnits: ', uint256(eu).toString(), '</text>',
+                '</svg>'
+            )
+        );
+
+        string memory json = string(
+            abi.encodePacked(
+                '{"name":"TUDAO License #', tokenId.toString(),
+                '","description":"Soulbound TUDAO License NFT with on-chain SVG and tiers.",',
+                '"image":"data:image/svg+xml;base64,', Base64.encode(bytes(svg)), '",',
+                '"attributes":[',
+                   '{"trait_type":"Tier","value":"', tierName, '"},',
+                   '{"trait_type":"EmissionClass","value":"', ecName, '"},',
+                   '{"trait_type":"EmissionUnits","value":"', uint256(eu).toString(), '"}',
+                   attrFamily,
+                ']}'
+            )
+        );
+
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,",
+                Base64.encode(bytes(json))
+            )
+        );
+    }
+
+    function _tierName(Tier t) internal pure returns (string memory) {
+        if (t == Tier.ARCHITECT) return "ARCHITECT";
+        if (t == Tier.FOUNDING) return "FOUNDING";
+        if (t == Tier.PROFESSIONAL) return "PROFESSIONAL";
+        if (t == Tier.VERIFIER) return "VERIFIER";
+        if (t == Tier.FAMILY) return "FAMILY";
+        return "";
+    }
+
+    function _emissionClassName(EmissionClass e) internal pure returns (string memory) {
+        if (e == EmissionClass.FOUNDING_EQ) return "FOUNDING_EQ";
+        if (e == EmissionClass.PROFESSIONAL_EQ) return "PROFESSIONAL_EQ";
+        if (e == EmissionClass.VERIFIER_EQ) return "VERIFIER_EQ";
+        return "NONE";
+    }
+
+    function _tierColor(Tier t, uint256 tokenId) internal view returns (string memory) {
+        if (t == Tier.ARCHITECT) return "#EAC14D";
+        if (t == Tier.FOUNDING) return "#5BA1F3";
+        if (t == Tier.PROFESSIONAL) return "#8C96A0";
+        if (t == Tier.VERIFIER) return "#66C18C";
+        if (t == Tier.FAMILY) {
+            FamilyMeta memory fm = familyMeta[tokenId];
+            if (fm.exists && bytes(fm.colorHex).length >= 4 && bytes(fm.colorHex).length <= 8) {
+                return fm.colorHex;
+            }
+            return "#B58BD4";
+        }
+        return "#DDDDDD";
+    }
+}
