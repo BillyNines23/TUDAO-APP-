@@ -1,0 +1,304 @@
+AI-Agent Prompt — TUDAO Provider Onboarding Portal (Final Spec)
+
+(Phase-3 · Marketplace & Escrow — Step-1: Provider Onboarding + MPA + Constitution link)
+
+1) Objective
+
+Design and deliver the full provider onboarding system that:
+
+Captures vendor identity, business profile, trades, regions, and required documents.
+
+Verifies EIN, licenses, and insurance with AI-assisted checks.
+
+Enforces Master Provider Agreement (MPA) e-signature and surfaces a persistent link to the TUDAO Constitution.
+
+Assigns an initial tier (Preferred / Standard / Probationary) and sets marketplace readiness flags.
+
+Provides an Admin Review Queue + audit trail.
+
+Exposes KPIs and exports to the Architect Dashboard.
+
+Ships secure APIs, storage, and role-based access.
+
+All copy must avoid investment/ROI wording. Rewards are “policy-based and variable, subject to DAO vote.”
+
+2) User Flows (Wizard · 5–8 minutes)
+Steps
+
+Create Account / Connect Wallet
+
+Email + password (or magic link) and wallet connect (Base).
+
+Consent to privacy policy + data use for verification.
+
+Show top-bar link: “TUDAO Constitution (opens in new tab)” — keep visible across all steps.
+
+Business Profile
+
+Legal name, DBA, EIN, entity type, founded year.
+
+Phone, support email, website, service regions (states/ZIPs).
+
+Trades (multi-select), specialties, residential/commercial flags.
+
+Documents Upload (drag-drop with status)
+
+EIN/IRS letter (PDF/image)
+
+Trade license(s) (number, state, class, expiry)
+
+Insurance COI (carrier, policy #, limits, expiry; GL ≥ $1M/occ)
+
+Owner ID (DL or passport)
+
+Optional: additional credentials (OSHA, EPA, etc.)
+
+Capabilities & Capacity
+
+Crew size, equipment list, typical response time, emergency availability, hourly range (internal only).
+
+Payout Preference
+
+USDC (Base) wallet (recommended) or ACH (routing/account—masked in UI).
+
+On-chain payout disclaimer.
+
+Legal & Compliance
+
+Master Provider Agreement (MPA) modal (HTML/PDF); scroll-to-end required.
+
+Visible “TUDAO Constitution” link under the MPA blurb.
+
+Capture: signer full name (from profile), wallet address, timestamp, IP; store file hash.
+
+Required checkboxes:
+
+“I agree to the Master Provider Agreement (vX.Y).”
+
+“I acknowledge the TUDAO Constitution may update DAO policy.”
+
+AI Scope Calibration (optional)
+
+Upload 1–3 past job photos + short notes to train prompts (stored for later).
+
+Review & Submit
+
+Summarize entries, highlight missing/invalid fields, ETA: “1–3 business days.”
+
+On submit: run auto-checks → show pass/fail per item in real time.
+
+Persistent footer links on every step: “TUDAO Constitution” · “Terms” · “Privacy”.
+
+3) Verification Logic (Auto + AI-assist)
+
+Auto-checks on submit
+
+OCR parse & name match across EIN letter, license, COI.
+
+Expiry: license & COI not expired; warn if ≤30 days to expiry.
+
+License mapping by trade/state (rule table): flag mismatches.
+
+Insurance minimums: GL ≥ $1M per occurrence.
+
+Sanctions screen: basic name match against public lists.
+
+Duplicate EIN detection.
+
+Wallet checks: valid checksum; not on denylist.
+
+AI-assist
+
+Document legibility score; prompt re-upload if poor.
+
+Narrative consistency of profile vs trades vs prior job photos.
+
+Risk score (0–100) with reasons.
+Routing:
+
+Auto-approve → risk ≤ 20 & all docs valid → Standard.
+
+Manual review → 21–60 → Probationary by default if provisionally approved.
+
+Block/revise → > 60 or hard-fail (expired COI/license, sanctions hit).
+
+4) Tiering (initial)
+
+Standard: default on clean approval.
+
+Probationary: conditional approval (higher risk or missing non-critical doc).
+
+Preferred: auto-promotion after X verified jobs, ≥ 4.7★ rating, low dispute rate.
+
+Demotion rules (later): repeated SLA misses, verifier audits failed, expired docs.
+
+Marketplace flags on approval:
+vendor.searchable=true, vendor.verifier_eligible=(rules), tier.
+
+5) Admin Review Queue
+
+Filters: status, tier, risk range, flags (expired_insurance, mismatch_name, duplicate_ein).
+Detail panel: parsed docs, originals (signed URLs), risk reasons, history, prior applications.
+Actions: Approve (choose tier), Deny (reasons), Request Revision (specify fields), Suspend.
+One-click reminders: “Upload new COI,” “Update license number/expiry.”
+Audit log every action.
+
+6) Data Model (Supabase)
+vendors(
+  id uuid pk, created_at timestamptz, updated_at timestamptz,
+  owner_user_id uuid, owner_wallet text,
+  legal_name text, dba text, ein text, entity_type text, founded_year int,
+  phone text, email text, website text,
+  regions jsonb, trades jsonb, specialties jsonb,
+  capacity jsonb, payout_method text, payout_details jsonb,
+  status text,      -- draft|submitted|needs_revision|approved|denied|suspended
+  tier text,        -- Preferred|Standard|Probationary
+  risk_score numeric, searchable bool default false, verifier_eligible bool default false,
+  notes text
+);
+
+vendor_documents(
+  id uuid pk, vendor_id uuid fk, type text,  -- EIN|LICENSE|INSURANCE|OWNER_ID|OTHER
+  file_url text, sha256 text,
+  number text, state text, issuer text,
+  issue_date date, expiry_date date,
+  verified bool default false, verification_notes text,
+  created_at timestamptz
+);
+
+legal_agreements(
+  id uuid pk, vendor_id uuid fk, type text default 'MPA',
+  version text, signed_at timestamptz,
+  signer_name text, signer_ip text, signer_wallet text,
+  doc_hash text, file_url text, accepted bool default false
+);
+
+vendor_flags(
+  id uuid pk, vendor_id uuid fk, flag text, -- sanction_hit|expired_insurance|mismatch_name|duplicate_ein
+  severity text, created_at timestamptz, resolved bool, resolved_at timestamptz
+);
+
+vendor_reviews(
+  id uuid pk, vendor_id uuid fk, reviewer_user_id uuid,
+  decision text, reasons jsonb, comments text, created_at timestamptz
+);
+
+audit_log(
+  id uuid pk, actor text, action text, target_id text, payload jsonb, ts timestamptz
+);
+
+
+Indexes: vendors(owner_wallet,status,tier), vendor_documents(vendor_id,type), legal_agreements(vendor_id,type,version).
+
+7) APIs (backend contract)
+POST   /api/vendors/apply                  {profile, regions, trades, specialties} → {vendor_id}
+POST   /api/vendors/:id/upload             form-data {type, file} → {doc_id, sha256}
+POST   /api/vendors/:id/payout             {method:'USDC'|'ACH', details{}} → 200
+POST   /api/vendors/:id/ack                {terms:true, privacy:true} → 200
+
+GET    /api/legal/mpa/current              → {version, file_url, sha256}
+POST   /api/legal/mpa/acknowledge          {vendor_id, signer_name, signer_wallet, version} → {accepted:true}
+GET    /api/legal/mpa/:vendor_id/status    → {accepted, version, signed_at}
+
+GET    /api/vendors/:id/status             → {status, tier, flags[], required_actions[]}
+POST   /api/vendors/:id/submit             → {queued:true, eta_days:1-3}
+
+GET    /api/admin/vendors                  ?status&tier&risk_min&risk_max&flag → list
+GET    /api/admin/vendors/:id              → dossier (profile, docs, risk, flags, MPA)
+POST   /api/admin/vendors/:id/decision     {approve|deny|revise|suspend, tier?, reasons[]}
+
+GET    /api/meta/constitution              → {url, version, sha256}
+
+
+Auth: Applicant endpoints require user JWT; admin endpoints require admin JWT.
+Security: Signed URLs for doc files; virus scan; rate-limits on upload.
+
+8) Constitution Link (where & how)
+
+Top-bar link labeled “TUDAO Constitution” on every onboarding step.
+
+MPA modal footer includes: “This Agreement operates within the policy framework of the TUDAO Constitution.”
+
+Vendor dashboard (post-approval): a persistent card with the Constitution link, version, and last updated date.
+
+API: /api/meta/constitution returns {url, version, sha256} so the UI always points to the current version.
+
+(Host the Constitution as a static PDF/HTML in your public docs bucket or website; keep a version string and SHA256 for integrity.)
+
+9) Notifications
+
+Submission received; needs revision (with exact items); approved (tier + next steps); denied (reasons).
+
+Expiry reminders for COI/license at 30/14/7 days; auto-move to needs_revision if lapsed.
+
+10) KPIs (feed to Architect Dashboard)
+
+Applications by status per week; time-to-decision.
+
+Avg risk_score by trade/region.
+
+% vendors with current MPA (version breakdown).
+
+Docs expiring in 30 days (count by trade).
+
+Revision rate (submissions per approval).
+
+Conversion to first job (days).
+
+Provide CSV/PDF exports and scheduling (daily/weekly/monthly).
+
+11) Security & Privacy
+
+Private storage; signed URLs (15–60 min).
+
+Encrypt signed MPAs (AES-256); store hashes.
+
+Mask EIN (last 4) in UI; no PII in logs.
+
+Full audit trail of admin actions.
+
+Block marketplace access unless status=approved and legal_agreements.accepted=true.
+
+12) Acceptance Criteria
+
+✅ End-to-end flow works: apply → upload → submit → auto-checks → admin decision → approved w/ tier.
+
+✅ MPA e-signature recorded with version, timestamp, IP, wallet; cannot submit without acceptance.
+
+✅ Constitution link is visible at all times in onboarding and on the vendor dashboard; /api/meta/constitution returns current URL/version/hash.
+
+✅ Marketplace flags update only on approved.
+
+✅ Expiry reminders fire and status changes on lapse.
+
+✅ Admin queue functions with filters, actions, and audit log.
+
+✅ KPIs populate to the Architect Dashboard; exports and schedules work.
+
+✅ All APIs authenticated; all files scanned and time-limited links.
+
+13) Nice-to-Have (phase after MVP)
+
+Live state license verification APIs; insurance eCertificate (ACORD) verification.
+
+In-portal chat for revision cycles.
+
+Association bulk onboard (CSV import).
+
+Badge mints: “KYC Verified,” trade badges, “Insured GL ≥ $1M.”
+
+Deliverables expected from the agent
+
+System architecture diagram & ERD.
+
+Screen maps and field lists for each wizard step.
+
+Admin queue UX outline.
+
+API specs with request/response JSON examples.
+
+Email templates (submission, revision, approval, denial, expiry).
+
+Data validation & test plan.
+
+Security checklist and privacy notes.
