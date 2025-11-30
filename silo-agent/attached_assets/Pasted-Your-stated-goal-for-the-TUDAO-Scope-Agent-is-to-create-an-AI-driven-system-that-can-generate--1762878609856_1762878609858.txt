@@ -1,0 +1,33 @@
+Your stated goal for the **TUDAO Scope Agent** is to create an **AI-driven system that can generate complete, accurate, and user-friendly scopes of work** for any trade or service — starting with sectors like landscaping, HVAC, and deck construction — by guiding end users (homeowners, property managers, etc.) through a simple question flow.
+
+More precisely, you’ve said the Scope Agent should:
+
+1. **Act as an intelligent front-end intake system**
+
+   * Use natural conversation to gather project details through text, voice, or photo uploads.
+   * Eliminate the need for technical knowledge — the AI should *lead and advise* users rather than just ask questions.
+   * Adapt dynamically: if the user says “I don’t know,” the agent should infer or suggest options rather than stall.
+
+2. **Produce a complete, standardized scope of work**
+
+   * Automatically structure the gathered information into measurable details: materials, dimensions, permits, timelines, and milestones.
+   * Output data ready for **smart contract generation, pricing, and vendor matching** on the TUDAO platform.
+
+3. **Operate service-agnostically**
+
+   * Work for multiple trades: HVAC, landscaping, roofing, deck building, cleaning, etc.
+   * Use branching question logic specific to each trade (service vs. installation, repair vs. replacement, etc.) while maintaining a consistent tone and structure.
+
+4. **Be simple enough for any user**
+
+   * Designed so a “little old lady” could successfully create a full job scope without technical knowledge.
+   * Use plain language, visuals, or examples where helpful.
+
+5. **Serve as the bridge between AI and blockchain layers**
+
+   * The scope it produces feeds directly into TUDAO’s smart contract system and decentralized payment/escrow mechanism.
+   * It ensures transparent, fair, and automated workflows for both customers and vendors.
+
+In short:
+
+> The TUDAO Scope Agent’s purpose is to **turn casual user descriptions, photos, and answers into legally sound, executable scopes of work** — the foundation for every verified, transparent contract on the TradeUnion DAO network.

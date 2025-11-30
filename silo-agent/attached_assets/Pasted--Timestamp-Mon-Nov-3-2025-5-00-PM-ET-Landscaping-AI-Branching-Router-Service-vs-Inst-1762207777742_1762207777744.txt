@@ -1,0 +1,235 @@
+**Timestamp:** Mon Nov 3, 2025 • 5:00 PM ET
+
+# Landscaping AI — Branching Router (Service vs. Installation)
+
+Below is a **service-agnostic, elderly-friendly** questioning flow that first classifies intent, then branches into **Service/Maintenance/Repair** vs **Installation/Replacement/New Build**. It’s designed for text, voice, or photo input and gracefully handles “I don’t know” answers.
+
+---
+
+## Master Router (Intent → Service vs Installation)
+
+**AI (warm, simple):**
+
+> “Tell me what you’d like done, or upload a couple photos. I’ll do the heavy lifting.”
+
+**Detect intent (keywords + signals + photos):**
+
+* **Service cues:** mow, trim, clean up, fix, repair, patch, diagnose, tune-up, one-time, weekly, storm debris.
+* **Installation cues:** install, replace, new bed, new sod, new design, re-do, add rock/mulch, landscape overhaul.
+
+**Clarify if ambiguous (one line, big buttons):**
+
+* “Are you looking to **fix/maintain** what you have, or **add/install** something new?”
+
+  * ✅ Service / Maintenance / Repair
+  * ✅ Installation / Replacement / New
+
+**Mermaid — Master Router**
+
+```mermaid
+flowchart TD
+  A[Start: Text/Voice/Photos] --> B{Detect intent?}
+  B -- Service-like --> S[Go to SERVICE flow]
+  B -- Install-like --> I[Go to INSTALLATION flow]
+  B -- Unclear --> C[Ask: Fix/maintain vs Add/install?]
+  C -- Service --> S
+  C -- Installation --> I
+```
+
+---
+
+# SERVICE Flow (Maintenance / Repair)
+
+**Design principles:** symptom-first, estimate by ranges, minimal measurements, photo-assisted, “I’m not sure” OK.
+
+### Step S1 — What needs attention?
+
+> “What should we take care of?”
+> Buttons (icons): **Mowing/Trimming**, **Cleanup (leaves/branches)**, **Mulch refresh**, **Shrub/Tree trim**, **Repair (sprinklers, edging, damage)**, **Other / Not sure**
+
+### Step S2 — Scope without measurements
+
+* “About how big is the area?” → **Small (a few spots)** / **Medium (front yard)** / **Large (front & back)** / **Not sure**
+* “Can you add a couple photos?” → **Upload** / **Skip for now**
+
+*(If photos: AI infers size, debris, access, slope, obstacles.)*
+
+### Step S3 — Access & frequency
+
+* “Is it easy to reach the area?” → **Easy** / **Gate** / **Hilly/steps** / **Not sure**
+* “Is this **one-time** or **ongoing**?” → **One-time** / **Weekly** / **Every 2 weeks**
+
+### Step S4 — Timing & budget comfort
+
+* “When would you like this done?” → **ASAP** / **This week** / **Browsing prices**
+* “Would you like a **quick ballpark** now and a **final quote after a photo/visit**?” → **Yes** / **No**
+
+### Step S5 — Friendly summary & edit
+
+AI reads back in plain English with photos inline.
+
+> “You want a leaf cleanup in the front yard, easy access, this week. We’ll provide the bags and haul-away.”
+
+### Step S6 — Estimate & contract-lite
+
+* Show **simple range** (includes TUDAO fee silently).
+* Offer **visit if needed** (for uncertain items).
+* Present **clear milestone(s)**:
+
+  * Milestone 1: Service completed → **Release escrow** after approval.
+
+**Mermaid — SERVICE**
+
+```mermaid
+flowchart TD
+  S0[Service Flow Start] --> S1[Pick task(s)]
+  S1 --> S2[Size guess + Photos optional]
+  S2 --> S3[Access + Frequency]
+  S3 --> S4[Timing + Ballpark Y/N]
+  S4 --> S5[Plain-English Summary + Edit]
+  S5 --> S6[Estimate Range + Milestone Escrow]
+  S6 --> S7[Vendor Match -> Finalize -> Schedule]
+```
+
+---
+
+# INSTALLATION Flow (New/Replace/Overhaul)
+
+**Design principles:** visualize choices, defaults by region, avoid measurements (use photos + categories), permit/haul-away prompts only when relevant.
+
+### Step I1 — What are we installing?
+
+Buttons with pictures: **New sod**, **Mulch/Rock beds**, **Planting (flowers/shrubs/trees)**, **Redesign/Overhaul**, **Edging/Border**, **Irrigation (new/extend)**, **Other**
+
+### Step I2 — Style & material (show examples)
+
+* “Which look do you like?” → **Natural mulch**, **Decorative rock**, **Simple green lawn**, **Low-maintenance beds**, **Not sure—show me options**
+* If mulch/rock: “Should we **bring material** and **match your photos**, or show choices?”
+* If sod: AI suggests local types (e.g., fescue/bermuda/zoysia) with tooltips.
+
+### Step I3 — Area & prep (no tape measure needed)
+
+* “About how big?” → **Small** / **Medium** / **Large** / **Not sure** (photos help)
+* “Do we need to **remove what’s there** first?” → **Yes** / **No** / **Not sure**
+* “Should we **haul away** old material?” → **Yes** / **No** / **Not sure**
+* “Any **sprinklers** in the area?” → **Yes** / **No** / **Not sure**
+
+### Step I4 — Extras & constraints
+
+* “Any **borders/edging**?”
+* “Is access **easy** or **gated/hilly**?”
+* “Any **HOA or city rules** we should know?” → **Not sure** is fine (AI flags for vendor check).
+* (If tree installs > certain size) suggest **utility locate** check.
+
+### Step I5 — Timing & budget comfort
+
+* “When do you want it done?” → **ASAP** / **This month** / **Browsing**
+* “Want a **visual proposal** with materials listed and a **clear total** before you decide?” → **Yes**
+
+### Step I6 — Plain-English proposal & milestones
+
+AI generates a **clean mini-proposal**:
+
+* **Scope:** prep, install, materials, haul-away.
+* **Visuals:** example photos or AI matches from uploads.
+* **Estimate:** single total or range (materials + labor; TUDAO fee included).
+* **Milestones** (example):
+
+  1. Deposit escrow (materials ordered)
+  2. Installation day complete
+  3. Final walk-through & approval → release remaining escrow
+
+**Mermaid — INSTALLATION**
+
+```mermaid
+flowchart TD
+  I0[Installation Flow Start] --> I1[Choose install type]
+  I1 --> I2[Style/Material examples]
+  I2 --> I3[Area & Prep (remove/haul)]
+  I3 --> I4[Extras: edging, HOA, access]
+  I4 --> I5[Timing + Proposal request]
+  I5 --> I6[Mini-Proposal + Milestones + Escrow]
+  I6 --> I7[Vendor Match -> Finalize -> Schedule]
+```
+
+---
+
+## AI Prompt Logic (Drop-in Pseudocode)
+
+Use this **router + branch template** in Replit (or any agent framework). It’s tolerant of “I don’t know,” prioritizes **photos**, and always produces a **summary + estimate + milestones**.
+
+```pseudo
+FUNCTION handle_landscaping_intake(user_input, photos):
+  intent = classify_intent(user_input, photos)  // "service" | "installation" | "unclear"
+  IF intent == "unclear":
+    ASK("Are we fixing/maintaining what you have, or adding/installing something new?",
+        OPTIONS=["Service/Maintenance/Repair","Installation/Replacement/New"])
+    intent = USER_CHOICE
+
+  IF intent == "service":
+    return run_service_flow(user_input, photos)
+  ELSE:
+    return run_installation_flow(user_input, photos)
+
+FUNCTION run_service_flow(input, photos):
+  tasks = ask_multi("What should we take care of?", 
+    ["Mowing/Trimming","Cleanup","Mulch refresh","Shrub/Tree trim","Repair","Other/Not sure"])
+  size = ask_size_or_photo(photos) // small/medium/large/unknown; invite photos
+  access = ask_simple("Access?", ["Easy","Gate","Hilly/steps","Not sure"])
+  freq = ask_simple("One-time or ongoing?", ["One-time","Weekly","Every 2 weeks"])
+  timing = ask_simple("When?", ["ASAP","This week","Browsing prices"])
+  summary = build_plain_summary(tasks, size, access, freq, timing, photos)
+  confirmed = confirm(summary)
+  estimate = estimate_service(tasks, size, access, photos)  // returns range with TUDAO fee included
+  milestones = ["Service complete -> release escrow"]
+  return package_result(summary, estimate, milestones)
+
+FUNCTION run_installation_flow(input, photos):
+  type = ask_single("What are we installing?",
+    ["New sod","Mulch/Rock beds","Planting","Redesign/Overhaul","Edging/Border","Irrigation","Other"])
+  style = offer_examples(type)  // allow "Not sure—show options"
+  size = ask_size_or_photo(photos)
+  prep = ask_yes_no_unknown("Remove existing first?")
+  haul = ask_yes_no_unknown("Haul away old material?")
+  irrigation = ask_yes_no_unknown("Sprinklers in area?")
+  extras = ask_multi("Any extras?", ["Edging","Border","None"])
+  rules = ask_yes_no_unknown("Any HOA/city rules?")
+  access = ask_simple("Access?", ["Easy","Gate","Hilly/steps","Not sure"])
+  timing = ask_simple("When?", ["ASAP","This month","Browsing"])
+  summary = build_plain_summary([type,style,extras], size, access, timing, photos, prep, haul, irrigation, rules)
+  confirmed = confirm(summary)
+  estimate = estimate_installation(type, size, style, prep, haul, access, photos) // range or total
+  milestones = ["Deposit (materials) -> escrow", "Installation complete", "Final walk-through -> release escrow"]
+  return package_result(summary, estimate, milestones)
+```
+
+---
+
+## Data Outputs (for downstream contract & matching)
+
+* **JobType:** Service | Installation
+* **SubTasks/Type:** e.g., “Cleanup + Mulch refresh” | “New sod + Edging”
+* **SizeCategory:** Small | Medium | Large | Unknown (with photo_inference=true/false)
+* **Access:** Easy | Gate | Hilly/steps | Unknown
+* **Materials:** Bring | Customer-provided | Decide later
+* **Prep/HaulAway:** Yes | No | Unknown
+* **IrrigationNearby:** Yes | No | Unknown
+* **Timing:** ASAP | Week | Month | Browsing
+* **Confidence:** High/Medium/Low (based on photos vs. text only)
+* **Milestones:** Array (tailored to branch)
+* **Photos:** URLs (annotated)
+* **Permit/HOA Flag:** true/false (installation types or user signal)
+
+---
+
+## UX Safeguards for “I don’t know”
+
+* Every question offers **Not sure** and a **Photo upload** alternative.
+* When “Not sure,” AI sets a **vendor-verify flag** and keeps the user moving forward.
+* Estimates are **ranges** until verification; language stays reassuring:
+
+  * “We’ll confirm details on a quick visit or from your photos—no surprises.”
+
+---
+
+If you want, I can drop this into a **single Replit prompt script** you can paste into your agent, or produce a **printable one-pager** for your build team.
