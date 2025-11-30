@@ -1,0 +1,275 @@
+TUDAO – Phase 2 Unified System Prompt (Back-End + Architect Dashboard)
+
+(Base Mainnet • Nodes • Emissions • Verification • Whale Logic • Governance • KPI Dashboard)
+
+1️⃣ Objective
+
+Design the complete Phase 2 TUDAO infrastructure.
+Deliver a specification (no code) for:
+
+Back-end services that track node uptime, verification tasks, emissions, bounties, and governance.
+
+Whale-logic enforcement and DAO parameter management.
+
+APIs for wallets, dashboards, and DAO Safe.
+
+The Architect KPI Dashboard for oversight, reports, and alerts.
+
+2️⃣ Context (from Phase 1)
+
+Node NFTs (Founding / Professional / Verifier) deployed on Base.
+
+TUDAO ERC-20 (75 B cap → 25 B active + 50 B DAO-locked reserve).
+
+Vaults: Emissions • Bounty • Vesting • DAO Reserve.
+
+DAO Safe (multisig admin).
+
+Supabase (Postgres + Storage).
+
+Front-end Next.js on AWS Amplify.
+Phase 2 adds the operational brain and analytics layer.
+
+3️⃣ Core Modules to Design
+Module	Purpose
+Telemetry Service	Capture node heartbeats → compute uptime % & SLA eligibility.
+Verification Service	Assign / track / score verification tasks and store results.
+Bounty Distributor	Pay out TUDAO per upheld verification task.
+Whale Logic Engine	Detect multi-Founder identities and apply per-identity dampeners.
+Emission Engine	Calculate daily rewards (15 : 8 : 1 FEU weights + dampener).
+Rewards Ledger & Claim Controller	Record epoch rewards; authorize on-chain claims.
+Governance Interface	Read/write DAO parameters (NRP, FEU weights, SLA, etc.).
+Architect Dashboard API	Aggregate and serve KPI data for admin views & reports.
+4️⃣ Whale Logic / Anti-Capture Rules
+
+Goal: prevent governance or emission capture by bulk Founder ownership.
+
+Founder Licenses (per Identity)	Effective Weight (license)
+1st	100 %
+2nd	70 %
+3rd	50 %
+4th +	25 %
+
+Each wallet → identity_id (hash).
+
+effective_FEU = 15 × dampener.
+
+Governance weight = √tokens × dampener.
+
+No wallet > 5 % vote weight after quadratic.
+
+Delegate ≤ 3 identities.
+
+Param changes timelocked ≥ 72 h.
+
+Dashboard publishes raw vs effective Founder weight (top 10).
+
+5️⃣ Node Tier Logic
+Tier	Role	Uptime Req	Verification Req	FEU Weight	Reward Type
+Founding	Passive steward	99 %	none	15 (10 + 5 baked)	Emission only
+Professional	Hybrid operator	98 %	≥ 1 task/day	8 (6 + 2 bonus)	Emission + bounty
+Verifier	Dedicated verifier	95 %	Verification is the job	1 + bounties	Emission + bounty
+6️⃣ Daily Emission Flow
+
+Telemetry → eligible nodes & uptime.
+
+Governance params → NRP + weights.
+
+Whale Logic Engine → adjust Founder FEU.
+
+Compute TotalFEU = Σ (F×15 after dampener + P_core×6 + P_bonus×2 + V×1)
+RewardPerFEU = NRP / TotalFEU
+
+Each node → base_reward = FEU × RewardPerFEU.
+
+Add bounties → total_reward.
+
+Write to Rewards Ledger + publish Merkle root on-chain.
+
+7️⃣ Verification → Bounty Flow
+
+Job posted → assigned via VRF/weighted draw.
+
+Verifier submits evidence → AI check → status upheld/overturned.
+
+If upheld → bounty = BaseRate × JobWeight × QualityScore.
+
+Aggregator sums bounties per wallet daily; Bounty Distributor pays from Vault.
+
+8️⃣ Telemetry & Uptime
+
+Heartbeat every 30–60 s.
+
+Rolling 24 h SLA window.
+
+Status = green/amber/red.
+
+Miss SLA → 0 reward that epoch.
+
+9️⃣ Data Model (Supabase)
+nodes(node_id, license_id, identity_id, tier, owner_wallet)
+telemetry_heartbeat(license_id, timestamp)
+telemetry_summary(license_id, uptime_24h, sla_pass)
+verification_tasks(task_id, job_id, assigned_to, weight, status, accuracy_score, bounty_amount)
+bounty_records(task_id, wallet, amount, epoch_date)
+rewards_ledger(epoch, node_id, feu_used, base_reward, bounty_reward, total_reward, claimed, tx_hash)
+governance_params(nrp, feu_f, feu_p, feu_v, sla, bounty_rate, job_weights, dampener_table)
+
+🔟 APIs / Endpoints
+Endpoint	Method	Description
+/api/nodes/status	GET	Uptime %, SLA status per node.
+/api/telemetry/heartbeat	POST	Record heartbeat (Operator Key).
+/api/verification/tasks	GET	List tasks + bounties.
+/api/verification/submit	POST	Submit proof/evidence.
+/api/rewards/epoch/:id	GET	Epoch breakdown for dashboard.
+/api/rewards/claim	POST	Generate claim proof / execute claim.
+/api/governance	GET	DAO parameters + dampener stats.
+/api/governance/top-identities	GET	Top Founder identities (raw vs effective).
+/admin/kpi/*	GET	Feeds Architect Dashboard metrics (see Section 13).
+11️⃣ Scheduling / Automation
+Job	Freq	Purpose
+Telemetry Collector	Continuous	Store heartbeats.
+Bounty Aggregator	Daily 23:00 UTC	Sum bounties.
+Emission Engine	Daily 00:00 UTC	Calc rewards.
+Epoch Publisher	Daily 00:10 UTC	Post Merkle root.
+Cleaner / Archiver	Weekly	Purge old telemetry.
+Alert Monitor	Continuous	SLA drops, RPC fails, whale alerts.
+12️⃣ Governance Variables (on-chain)
+NRP = 1_000_000 TUDAO/day
+FEU_F = 15   FEU_P = 8   FEU_V = 1
+SLA = [99,98,95]
+BaseBountyRate = 50 TUDAO
+JobWeight = 1–5
+DampenerTable = {1:1,2:0.7,3:0.5,4+:0.25}
+EpochLength = 24h
+MaxEpochSpend = NRP
+
+
+DAO can adjust NRP, FEU weights, bounty rates; others timelocked.
+
+13️⃣ Architect Dashboard Specification
+Pages
+
+Overview (Command Center) – cards + trend charts + alerts.
+
+Nodes & Uptime – SLA pass rates, per-node uptime table.
+
+Verification & Bounties – task volume, upheld %, turnaround, payouts.
+
+Emissions & Treasury – NRP utilization, per-tier emission, claims.
+
+Sales & Onboarding – node sales by tier, payment mix, refunds.
+
+Key Metrics
+
+Active nodes by tier / SLA pass rate.
+
+Verifications assigned / completed / upheld %.
+
+Avg turnaround time.
+
+NRP Utilization (% of cap used).
+
+TUDAO emitted by tier.
+
+Bounty payout (TUDAO) today/7d/30d.
+
+Whale impact (raw vs effective Founder weight).
+
+Queue backlog (verification tasks > SLA).
+
+Reports / Exports
+
+Node Uptime by Tier.
+
+Verification Throughput & Quality.
+
+Epoch Emission Ledger.
+
+Top Identities (Whale Oversight).
+
+Sales & Minting (Phase 1 funnel).
+
+Exports → CSV/PDF + scheduled emails (daily/weekly/monthly).
+
+Alerts & Thresholds
+
+SLA breach, Backlog spike, NRP guard, Whale share > threshold, RPC failure.
+
+Channels: dashboard banner + email (+ Discord later).
+
+Backend APIs for Dashboard
+GET /admin/kpi/overview?from&to
+GET /admin/nodes?tier&status&identity&from&to&page
+GET /admin/nodes/{node_id}
+GET /admin/verification/stats?from&to
+GET /admin/emissions/epoch?from&to
+GET /admin/governance/whales?from&to
+POST /admin/reports/export
+
+
+Auth = JWT (role = architect/admin).
+
+Performance Targets
+
+KPI API p95 < 300 ms, tables < 600 ms.
+
+Export ≤ 60 s (90-day window).
+
+Data freshness: telemetry ≤ 2 min; emissions daily.
+
+Done Definition
+
+All metrics populate accurately, filters work, drill-downs render, exports and alerts fire correctly, data matches ledger totals.
+
+14️⃣ Security / Compliance
+
+No private keys; Operator Keys hashed.
+
+Identity shown as hash only.
+
+DAO Safe admin only.
+
+HTTPS + WAF; Supabase service-role auth.
+
+All exports watermarked & expire 24 h.
+
+Admin actions audited.
+
+15️⃣ Deliverables Required from Agent
+
+Architecture diagram (services + on-chain links).
+
+Entity relationship diagram.
+
+Process flows (Telemetry → Emission → Claim → Dashboard).
+
+API contract specs (JSON schemas + examples).
+
+DAO param mapping table.
+
+Scheduler timeline (UTC 24 h).
+
+Dashboard wireframes & data dictionary.
+
+Executive summary (non-technical).
+
+✅ Acceptance Checklist
+
+ FEU ratios 15 : 8 : 1 implemented.
+
+ Whale logic dampeners applied to Founders + governance.
+
+ Uptime rules (99/98/95 %) enforced.
+
+ NRP cap respected per epoch.
+
+ Verification → bounty pipeline works.
+
+ Rewards Ledger and Claim Controller sync.
+
+ DAO vars read/write via governance vote.
+
+ Dashboard APIs expose accurate aggregates.
+
+ Reports + alerts function as defined.
