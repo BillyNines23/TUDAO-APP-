@@ -1,0 +1,49 @@
+# Dependencies
+node_modules
+
+# Build output (will be built in Docker)
+dist
+
+# Git
+.git
+.gitignore
+
+# Development files
+.env
+.env.local
+.env.*.local
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Replit specific
+.replit
+replit.nix
+.cache
+.upm
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+
+# Documentation
+*.md
+!README.md
+
+# Attached assets - exclude user uploads but keep generated images
+attached_assets/uploads
+attached_assets/stock_images
+!attached_assets/generated_images
+
+# Temporary files
+tmp
+temp
