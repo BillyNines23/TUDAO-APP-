@@ -1,0 +1,42 @@
+name: Deploy Agent Silo
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - silo-agent/**
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      PROJECT_ID: project-1662d9c3-c2d1-4f22-813
+      REGION: us-central1
+      SERVICE: tudao-agent
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/742935931594/locations/global/workloadIdentityPools/github-pool/providers/github
+          service_account: tudao-deployer@project-1662d9c3-c2d1-4f22-813.iam.gserviceaccount.com
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${SERVICE} \
+            --source ./silo-agent \
+            --region ${REGION} \
+            --allow-unauthenticated
