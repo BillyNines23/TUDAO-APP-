@@ -5,11 +5,10 @@ import * as path from 'path'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Essential fix: configure alias for Rollup/Vite to resolve "@/" imports
+  // FIX: Using __dirname ensures correct path resolution relative to this config file
   resolve: {
     alias: {
-      // Assuming your source code root is client/src, map "@" to that directory
-      "@": path.resolve(process.cwd(), "./client/src"), 
+      "@": path.resolve(__dirname, "./client/src"), 
     },
   },
 })
