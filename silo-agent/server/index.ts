@@ -1,6 +1,6 @@
 console.log("🔥 SERVER ENTRYPOINT LOADED");
 
-import express, { type Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import session from "express-session";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -8,11 +8,12 @@ import bcrypt from "bcryptjs";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
-import type { User } from "@shared/schema";
 
+// ---------- App bootstrap ----------
 const app = express();
+const PORT = Number(process.env.PORT) || 8080;
 
-// Extend Express User type
+// ---------- Type extensions ----------
 declare global {
   namespace Express {
     interface User {
@@ -25,45 +26,35 @@ declare global {
 
 declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown;
+    rawBody?: unknown;
   }
 }
 
-// Session configuration
+// ---------- Middleware ----------
 app.use(
   session({
-    secret:
-      process.env.SESSION_SECRET ||
-      "tudao-secret-key-change-in-production",
+    secret: process.env.SESSION_SECRET || "tudao-dev-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     },
   })
 );
 
-// Passport configuration
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await storage.getUserByUsername(username);
       if (!user) {
-        return done(null, false, {
-          message: "Incorrect username or password",
-        });
+        return done(null, false, { message: "Invalid credentials" });
       }
 
-      const isValidPassword = await bcrypt.compare(
-        password,
-        user.password
-      );
-      if (!isValidPassword) {
-        return done(null, false, {
-          message: "Incorrect username or password",
-        });
+      const valid = await bcrypt.compare(password, user.password);
+      if (!valid) {
+        return done(null, false, { message: "Invalid credentials" });
       }
 
       return done(null, {
@@ -71,29 +62,21 @@ passport.use(
         username: user.username,
         role: user.role,
       });
-    } catch (error) {
-      return done(error);
+    } catch (err) {
+      return done(err);
     }
   })
 );
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
-});
+passport.serializeUser((user: any, done) => done(null, user.id));
 
 passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await storage.getUser(id);
-    if (!user) {
-      return done(null, false);
-    }
-    done(null, {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-    });
-  } catch (error) {
-    done(error);
+    if (!user) return done(null, false);
+    done(null, user);
+  } catch (err) {
+    done(err);
   }
 });
 
@@ -107,83 +90,50 @@ app.use(
     },
   })
 );
+
 app.use(express.urlencoded({ extended: false }));
 
-// Health check endpoint
+// ---------- Health check ----------
 app.get("/health", (_req, res) => {
-  res.status(200).json({
-    status: "healthy",
-    timestamp: new Date().toISOString(),
-  });
+  res.status(200).json({ ok: true });
 });
 
-// Request logging middleware
+// ---------- Logging ----------
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+    const ms = Date.now() - start;
+    if (req.path.startsWith("/api")) {
+      log(`${req.method} ${req.path} ${res.statusCode} ${ms}ms`);
     }
   });
-
   next();
 });
 
-// Main async bootstrap
-(async () => {
-  console.log("🚀 REGISTERING ROUTES");
-  const server = await registerRoutes(app);
+// ---------- Routes ----------
+registerRoutes(app).catch((err) => {
+  console.error("❌ Route registration failed", err);
+  process.exit(1);
+});
 
-  app.use(
-    (err: any, _req: Request, res: Response, _next: NextFunction) => {
-      console.error("❌ UNHANDLED ERROR:", err);
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      throw err;
-    }
-  );
+// ---------- Error handler (DO NOT THROW) ----------
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  console.error("❌ UNHANDLED ERROR", err);
+  res.status(500).json({ message: "Internal Server Error" });
+});
 
-  if (app.get("env") === "development") {
-    console.log("🛠️ SETTING UP VITE (DEV MODE)");
-    await setupVite(app, server);
-  } else {
-    console.log("📦 SERVING STATIC ASSETS (PROD MODE)");
-    serveStatic(app);
-  }
+// ---------- Static / Vite ----------
+if (process.env.NODE_ENV === "development") {
+  setupVite(app).catch((err) => {
+    console.error("❌ Vite setup failed", err);
+    process.exit(1);
+  });
+} else {
+  serveStatic(app);
+}
 
-  const port = parseInt(process.env.PORT || "8080", 10);
-
-  console.log("🎧 ABOUT TO LISTEN ON PORT", port);
-
-  server.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    }
-  );
-})();
+// ---------- START SERVER (CRITICAL) ----------
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server listening on ${PORT}`);
+});
 
