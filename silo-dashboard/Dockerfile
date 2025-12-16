@@ -1,39 +1,40 @@
-# Stage 1: Build the Application
-FROM node:20-slim AS builder
+# Build stage
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# 1. Copy package files
-COPY package*.json ./
+# Copy package files
+COPY package.json package-lock.json* ./
 
-# 2. Install dependencies (Includes dev dependencies needed for the build script)
-RUN npm install
+# Install dependencies
+RUN npm ci
 
-# 3. Copy source code (including vite.config.js, client/ folder, etc.)
+# Copy source code
 COPY . .
 
-# 4. Run the build script. This step is where the previous error occurred.
-# If this succeeds, it creates 'dist/index.js' and 'dist/public'
+# Build the application
 RUN npm run build
 
-
-# Stage 2: Create the Final Production Image (Lightweight)
-FROM node:20-slim AS runner
+# Production stage
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# 1. Copy ONLY the compiled server entry point and client assets from the builder stage
-# Server entry point:
-COPY --from=builder /app/dist/index.js ./dist/index.js
-# Client assets folder (Vite output defined as 'dist/public' in your config):
-COPY --from=builder /app/dist/public ./dist/public
+# Copy package files for production dependencies
+COPY package.json package-lock.json* ./
 
-# 2. Copy package.json and install ONLY production dependencies
-COPY package*.json ./
-RUN npm install --omit=dev
+# Install only production dependencies
+RUN npm ci --only=production
 
-ENV PORT 8080
-EXPOSE 8080
+# Copy built files from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Expose port
+EXPOSE 5000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=5000
 
 # Start the application
-CMD [ "npm", "run", "start" ]
+CMD ["node", "dist/index.js"]

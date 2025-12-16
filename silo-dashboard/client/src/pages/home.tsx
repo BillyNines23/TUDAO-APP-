@@ -16,8 +16,9 @@ export default function Home() {
   
   const testWallets = {
     'New User': '0x' + Math.random().toString(16).substring(2, 42).padEnd(40, '0'),
+    'Provider': '0x1234567890abcdef1234567890abcdef12345678',
+    'Consumer': '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
     'Architect': '0x91ab951ab5c31a0d475d3539099c09d7fc307a75',
-    'Existing Consumer': '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
   };
   
   const switchWallet = (walletAddress: string) => {
