@@ -1,0 +1,127 @@
+Good — let’s get specific. A **20×20 deck (400 sq ft)** is a solid medium-to-large platform.
+Below is a **complete material breakdown** for a **standard rectangular attached deck**, built to current U.S. code (assuming ≈ 24–30 in height, 16 in joist spacing, pressure-treated lumber).
+If you change elevation, framing material, or surface (e.g., composite), quantities adjust slightly.
+
+---
+
+## 🧱 1. Framing & Structure
+
+| Component                   | Typical Size                 | Quantity                    | Purpose / Notes                                  |
+| --------------------------- | ---------------------------- | --------------------------- | ------------------------------------------------ |
+| **Ledger board**            | 2 × 10 × 20 ft               | 1                           | Bolts to the house rim joist                     |
+| **Beams (double)**          | 2 × 10 × 20 ft               | 4 boards total (2 per beam) | One beam at ~7 ft from house, one near deck edge |
+| **Posts**                   | 6 × 6 × 8 ft                 | 6–8                         | Under beams, spaced 6–8 ft apart                 |
+| **Joists**                  | 2 × 8 × 20 ft                | 16 – 18                     | 16 in on-center spacing across 20 ft span        |
+| **Joist hangers**           | Galv. joist hangers          | 18–20                       | One per joist at ledger                          |
+| **Post bases / anchors**    | 6×6 galv. base               | 6–8                         | Connect posts to concrete footings               |
+| **Post-to-beam connectors** | Galv. brackets or thru-bolts | 12–16                       | Secure beams to posts                            |
+| **Blocking / bridging**     | 2 × 8 × 16 ft                | 4–5 boards                  | Prevent joist twist                              |
+
+---
+
+## ⚒️ 2. Decking Surface
+
+| Material                 | Quantity                          | Notes                                                                   |
+| ------------------------ | --------------------------------- | ----------------------------------------------------------------------- |
+| **Deck boards**          | 5/4 × 6 × 16 ft – 34 pcs ≈ 544 lf | Based on 16 ft boards run perpendicular to house, includes ≈ 10 % waste |
+| **Screws**               | #8 × 2½" exterior – ~1,200 pcs    | Stainless or coated; hidden fasteners optional                          |
+| **Trim / fascia boards** | 1 × 8 × 20 ft – 3 pcs             | Cover rim joists for clean finish                                       |
+
+---
+
+## 🪜 3. Stairs (for ~30 in height)
+
+| Component     | Typical Size    | Quantity    |
+| ------------- | --------------- | ----------- |
+| Stringers     | 2 × 12 × 10 ft  | 3           |
+| Treads        | 5/4 × 6 × 48 in | 9–10 boards |
+| Risers        | 1 × 8 × 48 in   | 9–10 boards |
+| Stair posts   | 6 × 6 × 4 ft    | 2           |
+| Concrete pads | 12 × 12 × 4 in  | 2           |
+
+---
+
+## 🛡️ 4. Railings & Safety (code > 30 in high)
+
+| Component              | Typical Size  | Quantity              |
+| ---------------------- | ------------- | --------------------- |
+| 4×4 posts              | 4 × 4 × 42 in | 10–12                 |
+| Top/bottom rails       | 2 × 4 × 10 ft | 10                    |
+| Balusters              | 36 in         | ~100 (@ 4 in spacing) |
+| Fasteners / connectors | Galv.         | as needed             |
+| Optional cap rail      | 2 × 6 × 10 ft | 4                     |
+
+---
+
+## 🪨 5. Foundation
+
+| Item               | Spec                   | Quantity | Notes                  |
+| ------------------ | ---------------------- | -------- | ---------------------- |
+| Concrete footings  | 12 in dia × 36 in deep | 6–8      | 1 per post             |
+| Ready-mix concrete | 80 lb bags             | 18–20    | ≈ 2.5 bags per footing |
+| Gravel base        | ½ cu ft bags           | 8–10     | Drainage under posts   |
+
+---
+
+## ⚙️ 6. Hardware & Connectors
+
+* ½ in × 6 in galvanized lag screws / bolts (ledger, beams) – ≈ 24
+* Ledger washers / spacers – ≈ 24
+* Joist-to-beam hurricane ties – ≈ 16
+* Galv. nails / structural screws – as needed
+* Flashing tape for ledger & joists – 40 ft roll
+* Metal flashing (ledger protection) – 1 × 20 ft piece
+
+---
+
+## 💡 7. Optional Upgrades
+
+| Feature                    | Material                    | Quantity / Notes    |
+| -------------------------- | --------------------------- | ------------------- |
+| **Skirting**               | Lattice / composite panels  | ~64 sq ft           |
+| **Lighting**               | Post or step LEDs           | 8–12 fixtures       |
+| **Pergola / roof framing** | 4×4 or 6×6 posts, 2×8 beams | depends on design   |
+| **Stain / sealant**        | 2 gal (wood)                | covers ≈ 400 sq ft  |
+| **Hidden fastener kit**    | Composite systems           | 1 kit per 100 sq ft |
+
+---
+
+## 📏 8. Quick Material Totals Snapshot
+
+| Category           | Estimated Qty                    | Notes             |
+| ------------------ | -------------------------------- | ----------------- |
+| Lumber (PT)        | ≈ 1,100 – 1,300 board ft         | structure only    |
+| Decking boards     | ≈ 550 linear ft                  | plus 10 % waste   |
+| Concrete           | ≈ 1,600 lb (20 bags 80 lb)       | 6–8 footings      |
+| Screws / Fasteners | ≈ 1,200–1,500 pcs                | mixed sizes       |
+| Rail system        | ≈ 100 balusters, 10–12 posts     | 36 in height      |
+| Estimated weight   | ≈ 3,500–4,000 lb materials total | delivery by truck |
+
+---
+
+## 💰 9. Cost Ballpark (as of 2025)
+
+*(materials only; labor & permits vary by region)*
+
+| Material Type                    | Typical Range (20×20 deck) |
+| -------------------------------- | -------------------------- |
+| Pressure-treated wood            | $4,500 – $6,000            |
+| Cedar / redwood                  | $7,000 – $9,000            |
+| Composite / PVC                  | $10,000 – $14,000          |
+| Hardware + Concrete (all builds) | ≈ $1,000 – $1,500          |
+
+---
+
+## ⚠️ Notes for Your AI Scope Logic
+
+* **Adjust for elevation:** decks over 30 in require railings & deeper footings.
+* **Adjust for composite:** joist spacing → 12 in OC.
+* **Add line items for demo** if replacing an old deck (tear-down, disposal).
+* **Permit / code checks:** ledger flashing, post depth, guard height, stair geometry.
+
+---
+
+Would you like me to now:
+
+1. **Convert this list into a JSON or CSV dataset** for your AI scope generator (so each line becomes a selectable material node), or
+2. **Expand into a guided Q&A flow** where the AI walks the homeowner through *selecting each of these components* (similar to the landscaping workflow but deck-specific)?

@@ -1,0 +1,316 @@
+Nov 1, 2025 — 11:xx AM ET
+
+Got it. Here’s a single, copy-paste **master prompt for Replit (Ghostwriter/AI)** to scaffold the hybrid TUDAO scope engine with Supabase + adaptive Q&A. Drop this into Replit’s AI and let it generate the project/files.
+
+---
+
+# Master Prompt for Replit AI
+
+**Project:** TUDAO Adaptive Scope Engine (Hybrid: Conversational AI + DB Fallback)
+**Stack:** Node.js (Express) API + Supabase JS client. Minimal frontend stub.
+**Goal:** Implement `/session/start`, `/session/answer`, `/scope/complete` with adaptive logic using a service question library, session state, and structured scope output.
+
+## What to Build
+
+1. **Backend (Node + Express)**
+
+   * Routes:
+
+     * `POST /session/start` → create `session_states` row (service guess + confidence); return `session_id` + first question (if applicable).
+     * `POST /session/answer` → append answer to `session_states.answers`, evaluate conditional logic, pick next question:
+
+       * Prefer AI-generated follow-up if confident.
+       * Otherwise query `service_questions` fallback by `service_type` + `subcategory` + `conditional_tag`.
+       * Stop when completion condition met → return summary preview.
+     * `POST /scope/complete` → write final scope to `scopes_generated`; return JSON scope + human summary.
+   * Middleware:
+
+     * JSON body parsing, simple API key check via `X-API-KEY`.
+     * Basic error handler with consistent error shape.
+   * Services:
+
+     * `intentClassifier.ts`: classify incoming free-text into `{service_type, subcategory, confidence}` (placeholder deterministic rules + hook for LLM).
+     * `questionSelector.ts`: pulls next question given `answers`, `service_type`, `subcategory`, and `conditional_tag`.
+     * `scopeAssembler.ts`: converts answers → structured scope JSON + summary + suggested `estimated_hours`, `materials_needed`, `complexity`, `vendor_type`.
+
+2. **Supabase Integration**
+
+   * Use environment vars; **do not hardcode keys**.
+   * Tables (assume already created with provided SQL):
+
+     * `service_questions`
+     * `session_states`
+     * `scopes_generated`
+
+3. **Minimal Frontend Stub**
+
+   * `public/index.html` with a simple chat-like UI calling the three endpoints.
+   * Show: last question, input control (text/choice/file placeholder), progress, and preview on completion.
+
+4. **Seed Data**
+
+   * Insert a small seed set for **Plumbing → Faucet Repair** in `service_questions` (use SQL or a seed script).
+
+5. **Testing Utilities**
+
+   * `scripts/curl.md`: ready-to-run `curl` examples for each endpoint end-to-end.
+   * `README.md`: setup, env, run, and flow notes.
+
+## File/Folder Structure
+
+```
+/src
+  /routes
+    session.ts
+    scope.ts
+  /services
+    intentClassifier.ts
+    questionSelector.ts
+    scopeAssembler.ts
+    supabase.ts
+  /types
+    index.d.ts
+  server.ts
+/public
+  index.html
+/scripts
+  seed.ts
+  curl.md
+.env.example
+README.md
+package.json
+tsconfig.json (if using TS) or skip if JS
+```
+
+## Environment Variables (.env.example)
+
+```
+PORT=3000
+APP_API_KEY=dev-local-only
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+OPENAI_API_KEY=optional_for_future
+```
+
+## Route Contracts (Acceptance Criteria)
+
+### 1) `POST /session/start`
+
+**Body:**
+
+```json
+{
+  "user_id": "demo-user-1",
+  "initial_message": "My kitchen faucet is dripping",
+  "force_service_type": null, 
+  "force_subcategory": null
+}
+```
+
+**Behavior:**
+
+* Run `intentClassifier` → `{service_type: "Plumbing", subcategory: "Faucet Repair", confidence: 0.90}` (mock rules ok).
+* Create `session_states` with `answers = {}` and store classification.
+* Choose first question:
+
+  * If `confidence < 0.8`, ask a clarifier.
+  * Else fetch `service_questions` where `(service_type, subcategory)` and `required_for_scope = true`, lowest `sequence`.
+    **200 Response:**
+
+```json
+{
+  "session_id": "uuid",
+  "service_type": "Plumbing",
+  "subcategory": "Faucet Repair",
+  "confidence": 0.90,
+  "question": {
+    "id": "uuid-or-seed-id",
+    "text": "Where is the faucet located? (kitchen, bath, laundry)",
+    "response_type": "text",
+    "options": null
+  }
+}
+```
+
+### 2) `POST /session/answer`
+
+**Body:**
+
+```json
+{
+  "session_id": "uuid",
+  "question_id": "uuid",
+  "answer": "Kitchen"
+}
+```
+
+**Behavior:**
+
+* Merge into `session_states.answers` (e.g., `"location": "Kitchen"`).
+* Evaluate conditional tags and completion condition:
+
+  * If more required fields outstanding → next best question.
+  * If completion satisfied → return scope preview instead of next question.
+    **200 Response (next question path):**
+
+```json
+{
+  "session_id": "uuid",
+  "next_question": {
+    "id": "uuid",
+    "text": "Is the leak from the faucet head or under the sink?",
+    "response_type": "choice",
+    "options": ["Faucet head", "Under sink", "Not sure"]
+  },
+  "progress": {"required_answered": 1, "required_total": 3}
+}
+```
+
+**200 Response (completion path):**
+
+```json
+{
+  "session_id": "uuid",
+  "status": "ready_to_finalize",
+  "scope_preview": {
+    "category": "Plumbing",
+    "subcategory": "Faucet Repair",
+    "details": {
+      "location": "Kitchen",
+      "leak_point": "Faucet head",
+      "faucet_type": "Single-handle"
+    },
+    "estimated_hours": 1.5,
+    "materials_needed": ["O-ring", "replacement cartridge"],
+    "complexity": "Low",
+    "vendor_type": "Licensed plumber"
+  }
+}
+```
+
+### 3) `POST /scope/complete`
+
+**Body:**
+
+```json
+{
+  "session_id": "uuid"
+}
+```
+
+**Behavior:**
+
+* Persist to `scopes_generated` with `status = "unmatched"`.
+* Return final JSON + human summary string.
+  **200 Response:**
+
+```json
+{
+  "scope_id": "uuid",
+  "scope_data": { ...same as preview... },
+  "summary": "Kitchen faucet repair (leak at head, single-handle). Estimated 1.5 hours. Materials: O-ring, cartridge.",
+  "next": "Ready for vendor matching / escrow."
+}
+```
+
+## Service Behaviors
+
+### `intentClassifier.ts`
+
+* Deterministic mapping for MVP:
+
+  * Text contains any of: `faucet, dripping, sink, leak` → `{Plumbing, Faucet Repair, 0.9}`
+  * Else default `{General, Inspection, 0.6}`
+* Expose a function signature:
+
+```ts
+export async function classifyIntent(text: string): Promise<{
+  service_type: string;
+  subcategory: string;
+  confidence: number;
+  clarifier?: string;
+}> { ... }
+```
+
+### `questionSelector.ts`
+
+* Fetch `service_questions` by `(service_type, subcategory)`.
+* Filter by `conditional_tag` satisfaction using current `answers`.
+* Prefer `required_for_scope = true` unanswered items first; then optional.
+* Stop when `required_for_scope` questions answered count >= 3 for Faucet Repair (configurable).
+* Signature:
+
+```ts
+export async function nextQuestion(params: {
+  service_type: string;
+  subcategory: string;
+  answers: Record<string, any>;
+}): Promise< null | {
+  id: string;
+  text: string;
+  response_type: string;
+  options?: string[];
+} >
+```
+
+### `scopeAssembler.ts`
+
+* Map answer keys → scope fields for this subtype; provide defaults if missing.
+* Return `{scopeJSON, summaryText}` with heuristics:
+
+```ts
+export function assembleScope(args: {
+  service_type: string;
+  subcategory: string;
+  answers: Record<string, any>;
+}): {
+  scope: any;
+  summary: string;
+}
+```
+
+## Seed Data (Plumbing → Faucet Repair)
+
+Insert rows for:
+
+1. `Where is the faucet located? (kitchen, bathroom, laundry)` → `response_type: text`, `required_for_scope: true`, `sequence: 1`
+2. `Is the leak coming from the faucet head or under the sink?` → `choice ["Faucet head","Under sink","Not sure"]`, `required_for_scope: true`, `sequence: 2`
+3. `Is it a single-handle or double-handle faucet?` → `choice ["Single","Double","Not sure"]`, `conditional_tag: if leak_point = "Faucet head"`, `required_for_scope: false`, `sequence: 3`
+4. `Please upload a short video or photo of the issue if possible.` → `file`, optional, `sequence: 4`
+5. `When would you like the repair completed?` → `date`, required, `sequence: 5`
+
+(Use a simple conditional parser: if answer text includes “head” → `leak_point = "Faucet head"`; if includes “under” → `Under sink`.)
+
+## Non-Functional Requirements
+
+* Use TypeScript if possible; otherwise clean JS + JSDoc types.
+* Add ESLint + basic scripts:
+
+  * `dev`: nodemon
+  * `start`: node
+  * `seed`: ts-node scripts/seed.ts
+* Return consistent error shape:
+
+```json
+{ "error": { "code": "BAD_REQUEST", "message": "details..." } }
+```
+
+* No secrets committed. Read env via `dotenv`.
+
+## README Checklist
+
+* How to set env vars in Replit
+* How to run `npm i`, `npm run dev`
+* How to seed questions
+* Example `curl` calls (copy from `scripts/curl.md`)
+* Notes on extending to other subtypes (HVAC, Landscaping)
+
+## Done Definition (acceptance)
+
+* I can start a session, answer 2–3 questions, see a scope preview, finalize it, and find it in `scopes_generated`.
+* `session_states.answers` shows my incremental inputs.
+* Question flow does **not** ask irrelevant things (e.g., no square footage for a faucet leak).
+
+---
+
+**Build it now. Ask me only if absolutely necessary; otherwise generate the code, seed script, and docs exactly as specified.**

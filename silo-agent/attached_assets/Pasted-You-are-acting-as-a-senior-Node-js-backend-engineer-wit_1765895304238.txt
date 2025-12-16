@@ -1,0 +1,115 @@
+You are acting as a senior Node.js backend engineer with Cloud Run deployment experience.
+
+Context:
+
+This is a Node.js / TypeScript service located in silo-agent/
+
+It is deployed to Google Cloud Run
+
+CI/CD builds a Docker image and runs the container in production
+
+The container is currently failing to start on Cloud Run with:
+
+“The user-provided container failed to start and listen on the port defined by PORT=8080”
+
+Constraints:
+
+Do not introduce any tar.gz packaging
+
+Do not change the repository structure
+
+Do not add dev-only tooling to production
+
+All fixes must work via normal git commit → GitHub Actions → Docker build
+
+Objective
+
+Ensure that when the Docker container starts, a single long-running production server:
+
+Listens on process.env.PORT (Cloud Run requirement)
+
+Binds to 0.0.0.0
+
+Starts reliably in production mode
+
+Required actions
+
+Audit server/index.ts
+
+Confirm the server listens on:
+
+const port = parseInt(process.env.PORT || '8080', 10)
+
+
+Confirm the server binds to:
+
+host: '0.0.0.0'
+
+
+If the default port is 5000, change it to 8080 for production safety.
+
+Audit package.json
+
+Ensure there is a production-safe start script:
+
+"start": "node dist/index.js"
+
+
+Remove or avoid using:
+
+nodemon
+
+ts-node
+
+dev/watch servers
+
+npm run build should compile to dist/
+
+Audit the Dockerfile
+
+Ensure the final stage:
+
+Copies compiled output (dist/)
+
+Uses a single CMD or ENTRYPOINT that starts the server
+
+The Dockerfile must end with exactly one of these:
+
+CMD ["node", "dist/index.js"]
+
+
+or
+
+CMD ["npm", "run", "start"]
+
+
+Do NOT leave the container ending on a build step.
+
+Verify production behavior
+
+Confirm that running:
+
+node dist/index.js
+
+
+starts the server and keeps the process alive.
+
+Output required
+
+List exact files changed
+
+Show before/after for:
+
+Dockerfile CMD/ENTRYPOINT
+
+package.json scripts (if modified)
+
+server/index.ts port logic (if modified)
+
+Confirm explicitly:
+
+“This container will start correctly on Cloud Run.”
+
+If something is already correct, say so and do not change it.
+
+Do not generate archives or external artifacts.

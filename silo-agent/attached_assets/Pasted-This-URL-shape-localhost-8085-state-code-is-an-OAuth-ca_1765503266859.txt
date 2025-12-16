@@ -1,0 +1,94 @@
+This URL shape:
+
+localhost:8085/?state=...&code=...
+
+
+is an OAuth callback (Google / email / identity provider).
+
+That means your Agent silo is still configured for LOCAL OAuth, not Cloud Run OAuth.
+
+Specifically:
+
+The OAuth redirect_uri is set to http://localhost:8085
+
+But the agent is now deployed to Cloud Run
+
+So the auth provider sends the user back to a machine that doesn’t exist
+
+This is 100% configuration, not deployment, not auth state, not browser.
+
+What must be changed (non-negotiable)
+1. Update OAuth redirect URI
+
+Wherever OAuth is configured (likely in the Agent silo backend or env vars), change:
+
+http://localhost:8085/...
+
+
+to:
+
+https://<YOUR_AGENT_CLOUD_RUN_URL>/auth/callback
+
+
+Examples:
+
+https://tudao-agent-xxxxx-uc.a.run.app/auth/callback
+
+
+You must update this in all three places if present:
+
+Google OAuth Console
+
+Agent silo environment variables
+
+Any hardcoded fallback in code
+
+2. Update Agent silo environment variables
+
+In Cloud Run → Service → Edit → Variables (or via Cloud Build):
+
+OAUTH_REDIRECT_URI=https://tudao-agent-xxxxx-uc.a.run.app/auth/callback
+BASE_URL=https://tudao-agent-xxxxx-uc.a.run.app
+NODE_ENV=production
+
+
+If you see anything with localhost → it is wrong for Cloud Run.
+
+3. Confirm agent is actually running
+
+Run this in Cloud Shell:
+
+gcloud run services list --region=us-central1
+
+
+Then:
+
+gcloud run services describe tudao-agent \
+  --region=us-central1 \
+  --format="value(status.url)"
+
+
+Open that URL directly in the browser.
+
+If that works, your agent is fine — only OAuth is mis-pointed.
+
+Why closing tabs did nothing
+
+OAuth is stateless at this step. The provider already issued a redirect.
+Your browser is simply following instructions to go to a machine that isn’t listening.
+
+This is like dialing a phone number where no one lives anymore.
+
+Summary (the key takeaway)
+
+✅ Your silo is deployed
+
+✅ Cloud Run is working
+
+❌ OAuth redirect still points to localhost
+
+❌ That will never work in Cloud Run
+
+Once you update the redirect URI to the Cloud Run URL, this error will disappear immediately.
+
+If you want, next step I can:

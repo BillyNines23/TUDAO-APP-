@@ -1,0 +1,41 @@
+Step #0: Run `npm audit` for details.
+Step #0: npm notice
+Step #0: npm notice New major version of npm available! 10.8.2 -> 11.7.0
+Step #0: npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.7.0
+Step #0: npm notice To update run: npm install -g npm@11.7.0
+Step #0: npm notice
+Step #0: > rest-express@1.0.0 build
+Step #0:
+Step #0: > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+Step #0:
+Step #0: vite v5.4.20 building for production...
+Step #0: transforming...
+Step #0: 
+Step #0: A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+Step #0: Removing intermediate container e81d25f3e762
+Step #0:  401c74b4f83b
+Step #0: Step 8/20 : COPY . .
+Step #0:  16d6bb4fb94c
+Step #0: Step 9/20 : RUN npm run build
+Step #0:  Running in 7f106e2b692a
+Step #0: ✓ 1660 modules transformed.
+Step #0: x Build failed in 7.59s
+Step #0: error during build:
+Step #0: [vite:asset] Could not load /app/attached_assets/generated_images/TUDAO_logo_professional_blue_badge_d6d08bf6.png (imported by client/src/components/WelcomeScreen.tsx): ENOENT: no such file or directory, open '/app/attached_assets/generated_images/TUDAO_logo_professional_blue_badge_d6d08bf6.png'
+Step #0:     at async open (node:internal/fs/promises:639:25)
+Step #0:     at async Object.readFile (node:internal/fs/promises:1246:14)
+Step #0:     at async fileToBuiltUrl (file:///app/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:20428:19)
+Step #0:     at async Object.load (file:///app/node_modules/vite/dist/node/chunks/dep-D_zLpgQd.js:20328:17)
+Step #0:     at async PluginDriver.hookFirstAndGetPlugin (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:20689:28)
+Step #0:     at async Queue.work (file:///app/node_modules/rollup/dist/es/shared/node-entry.js:20899:32)
+Step #0: The command '/bin/sh -c npm run build' returned a non-zero code: 1
+Finished Step #0
+ERROR
+ERROR: build step 0 "gcr.io/cloud-builders/docker" failed: step exited with non-zero status: 1
+Step #0:     at async file:///app/node_modules/rollup/dist/es/shared/node-entry.js:19809:33
+Step #0: 
+-------------------------------------------------------------- BUILD FINISHED; TRUNCATING OUTPUT LOGS --------------------------------------------------------------
+Logs are available at [https://console.cloud.google.com/cloud-build/builds/81ffda03-6d4e-4121-ab30-4d41f5944d37?project=742935931594].
+
+BUILD FAILURE: Build step failure: build step 0 "gcr.io/cloud-builders/docker" failed: step exited with non-zero status: 1
+ERROR: (gcloud.beta.builds.submit) build 81ffda03-6d4e-4121-ab30-4d41f5944d37 completed with status "FAILURE"

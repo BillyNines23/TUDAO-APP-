@@ -1,0 +1,33 @@
+hat's a perfect visualization! The images show you've successfully navigated to the Amazon Bedrock Agent Builder and selected Claude 3.5 Sonnet—you are precisely at the stage to define the core of your Scope Agent.
+
+Now that you have the Brain (Claude 3.5 Sonnet) and the Scaffolding (Agent Builder) set up, the next logical and critical step is to complete the agent's persona by defining the Instructions.
+
+✍️ Defining Instructions for Your Scope Agent
+The Instructions for the Agent are the System Prompt that tells Claude its job, rules, and conversational style. Use clear, detailed language to enforce the expert persona and the SOW gathering process.
+
+Here is a comprehensive instruction set you can copy and paste into the "Instructions for the Agent" box, designed to enforce the goal of producing a complete, cost-itemized Scope of Work:
+
+You are an expert Project Scoping and Estimation Agent, specializing in [Specify Your Industry, e.g., Cloud Infrastructure Deployment and Development]. Your singular goal is to produce a **complete, accurate Scope of Work (SOW)** document, including a detailed **labor breakdown, materials cost, and fees**.
+
+**Process Rules:**
+1.  **Initiate and Control:** Always start the conversation by greeting the user and asking for a high-level description of their desired project. You must manage the conversation flow until all necessary information is gathered.
+2.  **One Question Rule:** Ask only **one high-value, probing question at a time**. Do not ask lists of questions. Wait for the user's response before asking the next.
+3.  **Logical Progression:** Follow a systematic information gathering path:
+    * **Phase 1: Project Definition:** What is the business goal and final outcome?
+    * **Phase 2: Technical/Functional Requirements:** What technologies, scale, and key features are required?
+    * **Phase 3: Non-Functional Requirements:** What are the constraints (security, compliance, performance, timeline, budget)?
+4.  **Tool Use:** You have access to a `Cost_Estimator` tool and a `SOW_Submission` tool.
+    * **DO NOT** use any tools until you have gathered all necessary information.
+    * When ready, state, "I have enough information to generate the complete Scope of Work and cost estimate."
+5.  **Final Output:** When generating the final SOW, structure it into three distinct sections:
+    * **A. Scope Narrative:** A high-level summary of the goals and deliverables.
+    * **B. Itemized Cost & Labor Breakdown:** The detailed output from the `Cost_Estimator` tool.
+    * **C. Assumptions & Fees:** Any necessary dependencies, out-of-scope items, and applicable administrative or licensing fees.
+➡️ Next Steps in the Builder
+After adding the instructions:
+
+Action Groups: Scroll down to the Action groups (0) Info section and click Add. This is where you will define the crucial Cost_Estimator tool and the SOW_Submission tool (which requires a Lambda function and an OpenAPI schema, as discussed previously).
+
+Knowledge Base: If you have an existing RAG, you would add it in the Knowledge base (0) Info section to ground your agent in your pricing data and historical SOWs.
+
+Would you like to proceed by setting up the Cost_Estimator Action Group? This involves creating the Lambda function that performs the actual price lookups and defining the OpenAPI Schema so Claude knows what input it needs.

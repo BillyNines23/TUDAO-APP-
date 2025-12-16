@@ -1,0 +1,125 @@
+**2025-12-13 13:23 EST**
+
+Below is the **exact Replit prompt** you should use.
+This is written to **reset the codebase away from direct gcloud/Cloud Run coupling** and make it **GitHub-Actions-first**, without breaking the monorepo.
+
+Copy-paste this verbatim into Replit.
+
+---
+
+## Replit Prompt (Authoritative Reset)
+
+> You are acting as a senior DevOps + backend engineer.
+>
+> Context:
+>
+> * This is a **monorepo** (`TUDAO-APP-`)
+> * We deploy **only `silo-agent/`** to Cloud Run
+> * Deployment is handled **exclusively by GitHub Actions**
+> * The application must be **cloud-agnostic at runtime**
+>
+> Objective:
+> **Remove all direct Cloud Run / gcloud / Google-specific configuration from the application code** and ensure the app is portable, container-ready, and compatible with Cloud Run *only via environment conventions*.
+>
+> ---
+>
+> ### Required actions (do not skip):
+>
+> 1. **Scan the entire `silo-agent/` directory** for:
+>
+>    * `gcloud`
+>    * `google-cloud-*`
+>    * `cloudrun`
+>    * hard-coded project IDs
+>    * hard-coded service names
+>    * hard-coded regions
+> 2. **Remove or refactor any of the above** so that:
+>
+>    * No code imports or references Cloud Run, GCP, or gcloud directly
+>    * No deployment logic exists inside application code
+> 3. Ensure the app follows **Cloud Run runtime conventions only**, not APIs:
+>
+>    * Listens on `process.env.PORT` (Node) or `os.environ["PORT"]` (Python)
+>    * Defaults to `8080` if PORT is not set
+>    * No fixed ports
+> 4. Verify and fix the following files **inside `silo-agent/`**:
+>
+>    * `Dockerfile`
+>
+>      * Uses a standard base image
+>      * Exposes port 8080
+>      * No gcloud SDK
+>      * No Google-specific tooling
+>    * App entry file (`app.py`, `main.py`, etc.)
+>
+>      * No Google imports
+>      * No deployment assumptions
+>    * `requirements.txt` / `package.json`
+>
+>      * Remove unnecessary Google SDK dependencies unless strictly runtime-required
+> 5. Confirm that **running locally** via:
+>
+>    ```
+>    docker build .
+>    docker run -p 8080:8080
+>    ```
+>
+>    starts the service successfully.
+>
+> ---
+>
+> ### Explicit constraints:
+>
+> * Do NOT add GitHub Actions files
+> * Do NOT modify other silos
+> * Do NOT introduce secrets
+> * Do NOT assume Cloud Run at runtime
+>
+> ---
+>
+> ### Output required:
+>
+> * List of files changed
+> * Explanation of *why* each change was made
+> * Confirmation that the service is now **deployment-agnostic**
+>
+> If anything cannot be safely removed, stop and explain why before proceeding.
+
+---
+
+## What this accomplishes (so you’re clear)
+
+After this prompt runs:
+
+* ✅ `silo-agent` is **clean**
+* ✅ No code is “pointing at gcloud”
+* ✅ Cloud Run is just a **runtime**, not a dependency
+* ✅ GitHub Actions is the **only deployment authority**
+* ✅ You can safely commit + push
+
+This prevents you from ever re-entering the “why is this tied to GCP” loop.
+
+---
+
+## After Replit finishes
+
+You will do **only this**:
+
+```bash
+git status
+git diff
+git add silo-agent
+git commit -m "Decouple silo-agent from direct Cloud Run / gcloud usage"
+git push
+```
+
+Then GitHub Actions takes over.
+
+---
+
+When Replit completes, reply with **one line**:
+
+* `changes made`
+* or `Replit flagged an issue`
+
+I will handle the next step precisely.

@@ -1,0 +1,176 @@
+AI Agent Prompt: TUDAO Customer Experience — Phase 1 (Service Request Submission)
+
+Objective:
+Create a no-code interactive prototype for the TUDAO Customer App that walks a user through requesting a service. The app should simulate the complete customer flow from “Get Started” to “Submit Request.”
+
+🔹 Prompt for the AI Agent
+
+You are building the TUDAO Customer Experience Flow (Phase 1) — a simple, conversational or screen-based prototype.
+Your goal is to replicate the user journey below with clear screens, buttons, and text prompts.
+No coding is required — only visual UI logic, text, and mock interaction flow.
+
+🧩 Step-by-Step Build Instructions
+1. App Setup
+
+Title: TradeUnion DAO (TUDAO)
+
+Subtitle: “Connecting with Verified, Skilled Workers — Powered by Smart Contracts”
+
+Primary Color Scheme: Blue + Steel Gray
+
+Add one main CTA button: [ Get Started ]
+
+2. Step One — Choose Action
+
+Prompt / Screen Text:
+
+“What would you like to do today?”
+
+Buttons:
+
+✅ Request a Service
+
+🧰 Become a Provider
+
+Action: Selecting “Request a Service” continues to next screen.
+
+3. Step Two — Input Type Prompt
+
+Prompt / Screen Text:
+
+“What do you need help with today?”
+
+Provide text input box and microphone icon.
+
+Example placeholder: “I need fence repairs.”
+
+When user submits, continue to AI Scope Engine.
+
+4. Step Three — AI Scope Engine
+
+Agent behavior:
+
+Read the user input.
+
+Categorize it into a service type (e.g., Fence Repair).
+
+Start the Smart Scope Wizard using logical follow-up questions.
+
+5. Step Four — Smart Scope Wizard (Progressive Prompts)
+
+Ask these in sequence:
+
+“What type of fence?” → Options: Wood / Vinyl / Chain Link
+
+“Approximate length?” → Options: 10–25ft / 25–50ft / 50+
+
+“What’s wrong with it?” → Options: Leaning / Broken boards / Rotting posts
+
+“Would you like to upload photos?” → Button: [ Upload Photos 📷 ] (optional)
+
+“When would you like the work done?” → Options: ASAP / This week / Flexible
+
+Then show button:
+✅ [ Generate Scope ]
+
+6. Step Five — Scope Preview
+
+Prompt / Screen Text:
+
+“Here’s your AI-generated job scope based on your details.”
+
+Example output:
+
+“Replace 5 fence panels and reinforce 3 posts on a 50ft wood fence. Includes debris haul-away.”
+
+Buttons:
+
+✅ Accept Scope
+
+✏️ Edit Scope
+
+🔄 Start Over
+
+When “Accept Scope” is tapped, move to vendor matching.
+
+7. Step Six — Vendor Matching
+
+Prompt / Screen Text:
+
+“We’ve found verified providers near you.”
+
+Display mock cards for 2–5 vendors:
+
+Name
+
+Rating (⭐4.9, etc.)
+
+Past jobs (short description)
+
+Price range ($$$)
+
+TUDAO badge image
+
+Button under each: [ View Proposal ]
+
+8. Step Seven — Proposal Details
+
+Prompt / Screen Text:
+
+“Here’s a proposal from your selected vendor.”
+
+Display:
+
+Scope summary
+
+Cost estimate (e.g., $480)
+
+Time window (e.g., Thursday 9AM)
+
+Payment options: Crypto / Card
+
+Escrow disclaimer:
+
+“Funds are securely held in smart contract and released upon completion.”
+
+Buttons:
+
+✅ Submit Request
+
+🔙 Back to Vendors
+
+Final confirmation message:
+
+“Your request has been submitted! You’ll receive updates as vendors confirm scheduling.”
+
+🎨 Additional Instructions
+
+Keep interface clean, minimalist, and intuitive.
+
+Each step should load as a new “screen” or “card.”
+
+Add mock icons for:
+
+📷 Photos
+
+💬 Chat bubbles
+
+🪙 TUDAO badge
+
+Include a progress bar or step tracker at the top (Step 1 of 8, Step 2 of 8, etc.)
+
+Include TUDAO logo watermark or text on each screen.
+
+⚙️ Optional Enhancements
+
+Let AI agent store session data so the scope can be “edited” later.
+
+Add confirmation pop-ups for each major step.
+
+Prepare space in UI for future:
+
+Milestone tracking
+
+Escrow balance display
+
+“While you’re here…” add-on job flow

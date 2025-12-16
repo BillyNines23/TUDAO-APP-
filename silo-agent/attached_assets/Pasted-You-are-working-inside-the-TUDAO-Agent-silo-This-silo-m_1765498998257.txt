@@ -1,0 +1,141 @@
+You are working inside the TUDAO Agent silo.
+This silo must be deployed to Google Cloud Run using the same proven architecture and workflow as the previously deployed silos (Backend, Frontend, Provider Onboard).
+
+OBJECTIVE
+
+Make the Agent silo production-ready, Cloud Run compatible, and deployable entirely from Replit using cloudbuild.yaml.
+
+REQUIRED OUTCOMES (DO NOT SKIP ANY)
+1. Server Architecture
+
+Use Express as the sole HTTP server
+
+No createServer() wrappers
+
+Listen only on process.env.PORT (default 8080)
+
+Bind to 0.0.0.0
+
+Add /health endpoint for Cloud Run
+
+Preserve raw body support if webhooks are present
+
+No Replit-only assumptions in production mode
+
+2. Environment Handling
+
+Support:
+
+NODE_ENV
+
+DATABASE_URL
+
+SESSION_SECRET
+
+FRONTEND_URL
+
+VITE_API_URL (if frontend build exists)
+
+All secrets must be runtime injected via Google Secret Manager
+
+Do not hardcode secrets
+
+Do not require .env files in production
+
+3. CORS
+
+Allow:
+
+Cloud Run frontend URL
+
+localhost ports (3000, 5173, 5000) for dev
+
+Do not use credentials: true unless cookies are required
+
+Avoid wildcard origin if credentials are used
+
+4. Frontend (If Present)
+
+Use Vite
+
+Output to dist/public
+
+All API calls must use VITE_API_URL
+
+No hardcoded backend URLs
+
+Static assets served in production via Express or Nginx
+
+5. Dockerfile
+
+Multi-stage build
+
+Node 20 Alpine
+
+Build stage includes dev deps
+
+Runtime stage minimal
+
+Expose port 8080
+
+Health check compatible
+
+No backend silos affected
+
+6. cloudbuild.yaml
+
+Build container
+
+Push to Artifact Registry
+
+Deploy to Cloud Run
+
+Inject secrets from Secret Manager
+
+No inline gcloud deploy commands outside the pipeline
+
+Service name: tudao-agent
+
+7. .dockerignore
+
+Exclude:
+
+node_modules
+
+.git
+
+logs
+
+Replit cache
+
+Do NOT exclude source code or build output
+
+DEPLOYMENT RULES
+
+All deployment must be runnable from Replit shell only
+
+Final deploy command must be:
+
+gcloud builds submit --config=cloudbuild.yaml
+
+HARD CONSTRAINTS
+
+Do not touch or reference other TUDAO silos
+
+Do not introduce Stripe, USDC, or payment logic unless already present
+
+Do not invent new environment variables
+
+Do not partially apply fixes — this must be end-to-end
+
+FINAL OUTPUT
+
+When finished, summarize:
+
+Files changed
+
+Secrets required
+
+One-command deploy confirmation
+
+Health check URL
