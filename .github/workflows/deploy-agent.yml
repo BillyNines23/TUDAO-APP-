@@ -47,4 +47,5 @@ jobs:
           gcloud run deploy ${SERVICE} \
             --image ${IMAGE} \
             --region ${REGION} \
-            --allow-unauthenticated
+            --allow-unauthenticated \
+            --set-secrets OPENAI_API_KEY=AI_INTEGRATIONS_OPENAI_API_KEY:latest  # <--- THIS IS THE CRITICAL FIX
