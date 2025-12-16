@@ -1,4 +1,4 @@
-# Build stage
+ Build stage
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -29,12 +29,12 @@ RUN npm ci --only=production
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Expose port
-EXPOSE 5000
+# Expose port (Cloud Run uses 8080 by default)
+EXPOSE 8080
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=8080
 
 # Start the application
 CMD ["node", "dist/index.js"]
