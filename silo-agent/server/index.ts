@@ -1,3 +1,5 @@
+console.log("🔥 SERVER ENTRYPOINT LOADED");
+
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import passport from "passport";
@@ -21,46 +23,61 @@ declare global {
   }
 }
 
-declare module 'http' {
+declare module "http" {
   interface IncomingMessage {
-    rawBody: unknown
+    rawBody: unknown;
   }
 }
 
 // Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'tudao-secret-key-change-in-production',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-  }
-}));
+app.use(
+  session({
+    secret:
+      process.env.SESSION_SECRET ||
+      "tudao-secret-key-change-in-production",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    },
+  })
+);
 
 // Passport configuration
-passport.use(new LocalStrategy(
-  async (username, password, done) => {
+passport.use(
+  new LocalStrategy(async (username, password, done) => {
     try {
       const user = await storage.getUserByUsername(username);
       if (!user) {
-        return done(null, false, { message: 'Incorrect username or password' });
+        return done(null, false, {
+          message: "Incorrect username or password",
+        });
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = await bcrypt.compare(
+        password,
+        user.password
+      );
       if (!isValidPassword) {
-        return done(null, false, { message: 'Incorrect username or password' });
+        return done(null, false, {
+          message: "Incorrect username or password",
+        });
       }
 
-      return done(null, { id: user.id, username: user.username, role: user.role });
+      return done(null, {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      });
     } catch (error) {
       return done(error);
     }
-  }
-));
+  })
+);
 
-passport.serializeUser((user, done) => {
+passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
 
@@ -70,7 +87,11 @@ passport.deserializeUser(async (id: string, done) => {
     if (!user) {
       return done(null, false);
     }
-    done(null, { id: user.id, username: user.username, role: user.role });
+    done(null, {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    });
   } catch (error) {
     done(error);
   }
@@ -79,22 +100,28 @@ passport.deserializeUser(async (id: string, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(express.json({
-  verify: (req, _res, buf) => {
-    req.rawBody = buf;
-  }
-}));
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as any).rawBody = buf;
+    },
+  })
+);
 app.use(express.urlencoded({ extended: false }));
 
-// Health check endpoint for container orchestration
-app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+// Health check endpoint
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+  });
 });
 
+// Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+  let capturedJsonResponse: Record<string, any> | undefined;
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -121,35 +148,42 @@ app.use((req, res, next) => {
   next();
 });
 
+// Main async bootstrap
 (async () => {
+  console.log("🚀 REGISTERING ROUTES");
   const server = await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  app.use(
+    (err: any, _req: Request, res: Response, _next: NextFunction) => {
+      console.error("❌ UNHANDLED ERROR:", err);
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+      throw err;
+    }
+  );
 
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    console.log("🛠️ SETTING UP VITE (DEV MODE)");
     await setupVite(app, server);
   } else {
+    console.log("📦 SERVING STATIC ASSETS (PROD MODE)");
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Cloud Run sets PORT=8080. Default to 8080 for container environments.
-  // For local development, Replit sets PORT=5000.
-  const port = parseInt(process.env.PORT || '8080', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  const port = parseInt(process.env.PORT || "8080", 10);
+
+  console.log("🎧 ABOUT TO LISTEN ON PORT", port);
+
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();
+
