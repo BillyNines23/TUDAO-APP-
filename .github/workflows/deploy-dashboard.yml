@@ -14,28 +14,31 @@ jobs:
     env:
       PROJECT_ID: tudao-core
       REGION: us-central1
-      SERVICE: tudao-dashboard  # <--- NEW SERVICE NAME
+      SERVICE: tudao-dashboard
       IMAGE: us-central1-docker.pkg.dev/tudao-core/tudao/tudao-dashboard:latest
-      BUILD_DIR: ./silo-dashboard # <--- TARGETS THE DASHBOARD FOLDER
+      BUILD_DIR: ./silo-dashboard
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        # Uses Workload Identity to securely authenticate the GitHub runner
+      - name: Authenticate to Google Cloud (Workload Identity)
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/298101947870/locations/global/workloadIdentityPools/github-pool/providers/github
           service_account: tudao-deployer@tudao-core.iam.gserviceaccount.com
 
-      - name: Set up gcloud and Configure Docker auth
+      - name: Set up gcloud
+        # Use setup-gcloud to install tools, but don't automatically run Docker config
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          component: 'docker'
+        
+      - name: Configure Docker to use Artifact Registry (CRITICAL FIX)
+        # Explicitly authenticates Docker with your region-specific Artifact Registry
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
       - name: Build Docker image for Dashboard
-        # Important: The last argument "${BUILD_DIR}" tells Docker where the Dockerfile is and what context to use.
+        # Uses the fixed Dockerfile and build script from the silo-dashboard directory
         run: |
           docker build -t ${IMAGE} ${BUILD_DIR}
 
