@@ -29,11 +29,10 @@ jobs:
           service_account: tudao-deployer@tudao-core.iam.gserviceaccount.com
 
       - name: Set up gcloud
-        # Use setup-gcloud to install tools, but don't automatically run Docker config
         uses: google-github-actions/setup-gcloud@v2
         
-      - name: Configure Docker to use Artifact Registry (CRITICAL FIX)
-        # Explicitly authenticates Docker with your region-specific Artifact Registry
+      - name: Configure Docker to use Artifact Registry
+        # This explicitly authenticates Docker with your region-specific Artifact Registry
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
@@ -55,5 +54,4 @@ jobs:
             --cpu 1000m --memory 512Mi \
             --set-secrets SESSION_SECRET=SESSION_SECRET:latest \
             --set-secrets DATABASE_URL=DATABASE_URL:latest \
-            --set-secrets CLAUDE_API_URL=CLAUDE_API_URL:latest \
             --set-secrets AI_INTEGRATIONS_OPENAI_API_KEY=AI_INTEGRATIONS_OPENAI_API_KEY:latest
