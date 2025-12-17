@@ -11,7 +11,7 @@ import type {
   GovernanceParams, InsertGovernanceParams,
   AlertRecord, InsertAlertRecord,
   NodeWithSummary
-} from '@shared/schema';
+} from '../shared/schema';
 import {
   nodes,
   telemetryHeartbeat,
@@ -21,7 +21,7 @@ import {
   rewardsLedger,
   governanceParams,
   alertRecords
-} from '@shared/schema';
+} from '../shared/schema';
 
 export class DBStorage implements IStorage {
   // Node management

@@ -1,5 +1,5 @@
 import { storage } from '../storage';
-import type { InsertAlertRecord } from '@shared/schema';
+import type { InsertAlertRecord } from '../../shared/schema';
 
 export interface AlertThresholds {
   slaBreachMinNodes: number; // Minimum nodes failing SLA to trigger alert

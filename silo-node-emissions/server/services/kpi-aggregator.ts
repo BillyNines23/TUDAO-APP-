@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import type { KPIOverview } from "@shared/schema";
+import type { KPIOverview } from "../../shared/schema";
 
 export class KPIAggregator {
   async getOverviewKPIs(): Promise<KPIOverview> {

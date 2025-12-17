@@ -1,5 +1,5 @@
 import { DBStorage } from './db-storage';
-import type { InsertNode, InsertTelemetrySummary, InsertVerificationTask, InsertRewardsLedger } from '@shared/schema';
+import type { InsertNode, InsertTelemetrySummary, InsertVerificationTask, InsertRewardsLedger } from '../shared/schema';
 
 async function seed() {
   const storage = new DBStorage();

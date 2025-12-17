@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import type { EmissionCalculation } from "@shared/schema";
+import type { EmissionCalculation } from "../../shared/schema";
 import { MerkleTree } from "merkletreejs";
 import crypto from "crypto";
 

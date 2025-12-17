@@ -1,6 +1,6 @@
 import { createArrayCsvWriter } from "csv-writer";
 import type { IStorage } from "../storage";
-import type { Node, TelemetrySummary, VerificationTask, RewardsLedger } from "@shared/schema";
+import type { Node, TelemetrySummary, VerificationTask, RewardsLedger } from "../../shared/schema";
 
 export class ExportService {
   constructor(private storage: IStorage) {}

@@ -13,7 +13,7 @@ import type {
   KPIOverview,
   EmissionCalculation,
   ClaimProof
-} from "@shared/schema";
+} from "../shared/schema";
 
 export interface IStorage {
   // Node management

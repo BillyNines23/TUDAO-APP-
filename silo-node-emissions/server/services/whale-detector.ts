@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import type { WhaleIdentity } from "@shared/schema";
+import type { WhaleIdentity } from "../../shared/schema";
 
 export class WhaleDetector {
   async getTopIdentities(limit: number = 10): Promise<WhaleIdentity[]> {

@@ -239,6 +239,13 @@ Daily automation using node-cron:
 
 ## Recent Changes
 
+### 2025-12-17: Cloud Run Deployment Preparation
+- **Import Path Updates**: All server-side imports updated from @shared/schema to relative paths (../shared/schema or ../../shared/schema) for production bundling compatibility
+- **Production Entry Point**: Created server/index.prod.ts without Vite or Replit development plugins - serves static files from dist/public, listens on port 8080
+- **Dockerfile**: Multi-stage build with node:20-alpine, frontend built with Vite, server bundled with esbuild using --packages=external flag
+- **Build Pipeline**: npx vite build → npx esbuild server/index.prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js
+- **Build Verification**: Confirmed no @shared, vite, or @replit references in bundled dist/index.js output
+
 ### 2025-10-31: Phase 2 MVP Implementation Complete
 - **Database Migration to PostgreSQL**: Migrated from in-memory to Neon PostgreSQL with Drizzle ORM, implemented DBStorage class for all CRUD operations, seeded 110 nodes (48 Founding, 32 Professional, 30 Verifier) with realistic test data
 - **Alert Monitoring System**: Complete implementation with 4 detection types (SLA breaches ≥5%, verification backlog ≥20, NRP utilization ≥95%, whale concentration ≥40%), automatic checking every 5 minutes, manual trigger endpoints, alert resolution API, frontend integration with severity mapping (critical/high→error, medium→warning, low→info)
