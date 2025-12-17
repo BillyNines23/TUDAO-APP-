@@ -6,47 +6,56 @@ on:
       - main
     paths:
       - 'silo-node-emissions/**'
-  # This allows the manual "Run workflow" button to appear in GitHub Actions
-  workflow_dispatch: 
+  workflow_dispatch: # Allows manual trigger from the Actions tab
 
-env:
-  PROJECT_ID: tudao-core
-  REGION: us-central1
-  SERVICE_NAME: silo-node-emissions
-  # Ensure this matches your Artifact Registry path exactly
-  ARTIFACT_REGISTRY: us-central1-docker.pkg.dev/tudao-core/tudao/silo-node-emissions
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      PROJECT_ID: tudao-core
+      REGION: us-central1
+      SERVICE: silo-node-emissions
+      IMAGE: us-central1-docker.pkg.dev/tudao-core/tudao/silo-node-emissions:latest
+      BUILD_DIR: ./silo-node-emissions
+
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Google Auth
-        uses: 'google-github-actions/auth@v2'
+      - name: Authenticate to Google Cloud (Workload Identity)
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          # Mirroring your working dashboard auth exactly
+          workload_identity_provider: projects/298101947870/locations/global/workloadIdentityPools/github-pool/providers/github
+          service_account: tudao-deployer@tudao-core.iam.gserviceaccount.com
 
-      - name: Set up Cloud SDK
-        uses: 'google-github-actions/setup-gcloud@v2'
-
-      - name: Configure Docker
-        run: gcloud auth configure-docker us-central1-docker.pkg.dev
-
-      - name: Build and Push Container
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        
+      - name: Configure Docker to use Artifact Registry
         run: |
-          # We run the build from the root, but point to the silo folder
-          docker build -t ${{ env.ARTIFACT_REGISTRY }}:${{ github.sha }} ./silo-node-emissions
-          docker push ${{ env.ARTIFACT_REGISTRY }}:${{ github.sha }}
+          gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-      - name: Deploy to Cloud Run
+      - name: Build Docker image for Node Emissions
         run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image ${{ env.ARTIFACT_REGISTRY }}:${{ github.sha }} \
-            --region ${{ env.REGION }} \
-            --platform managed \
+          docker build -t ${IMAGE} ${BUILD_DIR}
+
+      - name: Push Docker image
+        run: |
+          docker push ${IMAGE}
+
+      - name: Deploy Node Emissions to Cloud Run
+        run: |
+          gcloud run deploy ${SERVICE} \
+            --image ${IMAGE} \
+            --region ${REGION} \
             --allow-unauthenticated \
-            --set-env-vars="NODE_ENV=production" \
-            --set-secrets="DATABASE_URL=DATABASE_URL:latest"
+            --cpu 1000m --memory 512Mi \
+            --set-secrets DATABASE_URL=DATABASE_URL:latest
+            # Add or remove secrets below if this node needs them:
+            # --set-secrets SESSION_SECRET=SESSION_SECRET:latest
