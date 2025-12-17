@@ -5,12 +5,15 @@ on:
     branches:
       - main
     paths:
-      - 'silo-node-emissions/**' # Only runs when this folder changes
+      - 'silo-node-emissions/**'
+  # This allows the manual "Run workflow" button to appear in GitHub Actions
+  workflow_dispatch: 
 
 env:
   PROJECT_ID: tudao-core
   REGION: us-central1
   SERVICE_NAME: silo-node-emissions
+  # Ensure this matches your Artifact Registry path exactly
   ARTIFACT_REGISTRY: us-central1-docker.pkg.dev/tudao-core/tudao/silo-node-emissions
 
 jobs:
@@ -34,6 +37,7 @@ jobs:
 
       - name: Build and Push Container
         run: |
+          # We run the build from the root, but point to the silo folder
           docker build -t ${{ env.ARTIFACT_REGISTRY }}:${{ github.sha }} ./silo-node-emissions
           docker push ${{ env.ARTIFACT_REGISTRY }}:${{ github.sha }}
 
